@@ -7,8 +7,8 @@
 
 /* Four home actions must fit above the controller footer on laptop-height screens. */
 #home .home-copy{height:auto;display:block}
-#home .home-nav{position:static;left:auto;bottom:auto;gap:8px;margin:22px auto 0}
+#home .home-nav{position:static;left:auto;bottom:auto;gap:8px;margin:22px 0 0 -8px}
 #home .home-nav button{min-height:56px;padding:14px 21px;font-size:20px}
 #home .home-nav button>span:first-child{margin-right:20px}
-@media(max-height:850px){#home .home-copy{padding-bottom:0}#home h1{font-size:clamp(56px,8.4vh,72px);margin:10px 0 14px}#home .eyebrow{margin-bottom:9px}#home .home-description{margin-bottom:13px;line-height:1.5}#home .home-nav{gap:7px;margin-top:18px}#home .home-nav button{min-height:51px;padding:12px 19px;font-size:19px}#home .home-nav .nav-arrow{font-size:20px}}
-@media(max-height:700px){#home .home-nav{margin-top:12px;gap:5px}#home .home-nav button{min-height:44px;padding:10px 17px;font-size:17px}}
+@media(max-height:850px){#home .home-copy{padding-bottom:0}#home h1{font-size:clamp(56px,8.4vh,72px);margin:10px 0 14px}#home .eyebrow{margin-bottom:9px}#home .home-description{margin-bottom:13px;line-height:1.5}#home .home-nav{gap:7px;margin:18px 0 0 -8px}#home .home-nav button{min-height:51px;padding:12px 19px;font-size:19px}#home .home-nav .nav-arrow{font-size:20px}}
+@media(max-height:700px){#home .home-nav{margin:12px 0 0 -8px;gap:5px}#home .home-nav button{min-height:44px;padding:10px 17px;font-size:17px}}
