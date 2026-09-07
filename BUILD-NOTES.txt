@@ -1,0 +1,160 @@
+DECK — ONE MORE RUN
+
+Open deck-prototype.html in a modern desktop browser. Keep the deck folder beside it.
+All game assets are included locally. index.html is the entry point for static hosting.
+
+THE OBSTACLE COLLECTION / 28 COURSES
+Five packs: Open Water, High Tide, Golden Hour, After Hours, Vertical Limit.
+First Light (level one) keeps its existing track, pads, spawn and finish unchanged.
+The other 23 original courses are redesigned around broad obstacle structures.
+Every rebuilt course has its own authored architectural centerpiece, footprint,
+sculpted riding surface and site plan. Paired craters, canyon shells, braided
+ridges, amphitheatres, dunes, vaults and crescents have different shapes, not just
+different placements. The remaining structures vary in dimensions and elevation;
+each regular course has its own turn sequence and floor-height changes.
+Four additional tower courses — Stacked, Skywell, The Spire and Tower Run — climb
+through five or six floors, with a wide wraparound ascent and narrow express ramp
+between each floor. Each tower also has an optional over-vertical launch on its
+first ascent. Build speed along its run-up, ride past vertical, and rotate back
+to wheels-down in the air to reach the catching platform. There is no hidden
+launch impulse or automatic successful flip. All courses are unlocked.
+
+The individual centerpieces are connected to supporting structures:
+- Sculpted bowls with low middle lines and higher carved shoulders.
+- Pitched rooftop wedges: ride the ridge or carve around either side.
+- Gridded platforms with real square holes: ONLY in Wide Awake and Heatwave.
+- Three-way descents: wide side ramp, steep side ramp, or a fall into a middle bowl.
+- Curved takeoffs into raised decks, with a longer low route around the jump.
+- Slanted walls that launch across a gap into a separate landing platform.
+- Round blue obstacles with inside and outside lines.
+- Stepping islands with an outside bridge and two mid-route crossover ramps.
+- Rolling crests, raised spines with low valleys, and three-way flyovers.
+
+Purple-edged crossover ramps connect the bridge to the islands. Mix a few jumps
+with an outside section, or leave the islands early. These are physical, rideable
+connections, not teleports or forced lanes. Bowls and roofs are open across their
+width, so lines can also be switched by steering across the surface.
+Several courses start high, with three descending choices near the start.
+Orange-edged routes are alternatives. Edge colors are paint, not special terrain.
+
+No sectors, ordered gates or checkpoints. The layout itself separates early routes
+from the finish. Skilled shortcuts are allowed; falling restarts the whole run.
+Cross the checker stripe to finish, even while airborne. Normal courses have no
+finish height limit. Tower finishes belong to the top deck: flying above it counts,
+but passing beneath it on a lower floor does not. There is no upper height limit.
+
+HANDLING AND TOYS
+Acceleration builds more gradually, now about 18% softer than the previous update.
+Braking remains responsive; maximum cruising speed and boost power are unchanged.
+Both jumps add a push away from the board's top side and preserve existing momentum.
+Jump upright to push upward, upside down to push downward, or nose-down to push
+forward. Roll sideways to direct an air jump sideways. A ground jump follows the
+surface under your wheels. You still get only one extra jump before landing.
+A well-aimed jump at top speed can push past the normal 43 m/s driving limit, up
+to about 54 m/s. The extra-speed allowance lasts briefly and releases gradually;
+it does not replace the stronger boost-pad and bumper speed allowances.
+Yellow pads add a strong forward boost and a short trail matching the selected deck.
+Blue jump pads remain in the preserved first course; redesigned courses use natural
+ramps and jumps instead of relying on blue launch strips.
+Red bumpers reflect the hit and add speed: at least 52 m/s, up to 74 m/s.
+A glancing hit redirects you; a head-on hit sends you back.
+
+There are no clean-landing bonuses and no hard-landing text notifications.
+The harder you hit a surface, the more speed you lose. Impact is measured into the
+surface, so following a descending ramp is gentler than slamming onto a flat deck.
+Completed flips do not award bonus speed. Releasing rotation holds the airborne
+angle. Land on your wheels: an upside-down or severely sideways landing stops
+your momentum, displays a large red CRASH and rotates the board upright again.
+The run and clock continue; there is a brief recovery before accelerating again.
+Normal hard landings lose speed without a hard-landing text notification.
+
+The camera uses stable, fixed-distance framing with no speed zoom or collision
+snaps. Track geometry between the board and camera fades temporarily to keep
+the view clear. Grip tape and bolts now follow the deck's exact curved profile.
+
+CONTROLLER / STANDARD PLAYSTATION AND XBOX MAPPING
+R2 / RT: accelerate
+L2 / LT: brake; hold to reverse
+Left stick left / right: steer
+Left stick up / down in air: rotate nose down / up; hold for a full flip
+Cross / A: jump, then press again for one air jump
+L1 / LB: roll left in midair; hold to keep rotating
+R1 / RB: roll right in midair; hold to keep rotating
+R3 (right-stick click): restart the run
+Options / Start: pause
+Left stick / D-pad: move the outlined menu selection
+Cross / A: select
+Circle / B: back
+Right stick on Home or in Locker: turn and tilt the board viewing angle
+Play is selected automatically on the Home screen.
+
+KEYBOARD
+WASD or arrow keys: accelerate, brake, steer
+Space: jump / double jump
+Q / E: roll left / right in air
+I / K: rotate nose down / up in air
+R: restart; Esc / P: pause
+Arrow keys + Enter: menus
+J / L and U / O on Home or in Locker: rotate the board view
+
+PERSONAL BESTS AND GHOST REPLAYS
+The finish screen clearly shows seconds faster or slower than your personal best.
+Your first finish sets the PB. A translucent, non-colliding best-run ghost appears
+on later attempts. Toggle BEST GHOST in the pause menu.
+
+Choose MY REPLAYS on Home, or WATCH MY BEST after finishing, to watch your own saved
+best run from its gameplay camera. Playback does not change times, medals or tokens.
+Cross / A or Start: pause / play
+D-pad left / right: seek backward / forward five seconds
+R3: restart playback
+Circle / B: leave playback
+Keyboard: Space / P, left / right arrows, R, and Esc.
+Mouse: use the replay slider and visible playback buttons.
+Only your own local best-run ghosts are available; online spectating is not added.
+
+LOCKER AND SHOP
+22 deck designs, including six animated graphics; eight wheel sets, including
+pulsing and polished-metal wheels. Equip decks and wheels independently.
+Earn tokens through medal progress. Cosmetics do not change physics.
+There are no real-money purchases. Original, game-generated music plays in menus
+and the Locker. SOUND ON/OFF is at the top right.
+Press a button on a connected controller so the browser can detect it.
+Some browsers require a click or keyboard press before allowing audio to start.
+
+SAVES
+As requested, this update clears ALL best times, archived best times and recorded
+ghosts once when the updated game next loads. That wipe cannot be undone in-game.
+Owned cosmetics, selected wheels and token balances are retained. New records
+earned afterward are saved normally and are NOT cleared on ordinary reloads.
+First Light's layout stays unchanged; its old best is cleared along with the rest.
+Progress is local to this browser and site. Clearing browser data can remove it;
+moving from the local file to a hosted URL does not carry progress to the new site.
+No account, online leaderboard, payments or external service is used.
+
+HOSTING
+The outputs folder is ready for static hosting: index.html, deck-prototype.html and
+the complete deck folder must stay together. A GitHub repository and its Pages
+settings are still needed to publish a public playable link. This build has not
+been uploaded or published automatically.
+
+THE BUILD
+deck/core.js: fixed-step collision, board physics and the preserved first layout
+deck/architecture.js: individual course identities, shapes, turns and elevation plans
+deck/obstacles.js: new structure geometry, alternative routes and tower courses
+deck/game.js: 3D presentation, audio, controllers, menus, replays and progression
+deck/style.css: menu and HUD presentation
+deck/three.min.js: vendored Three.js renderer (license beside it)
+
+TESTING
+Automated CPU checks cover first-level geometry preservation, main-route completion,
+alternate routes, crossover ramps, solid sides, ceilings, high-speed landings, open
+holes, airborne finishes, boosts, bumpers, impact speed loss, upside-down launches,
+crash recovery, exact grip alignment, unique landmarks and one-time score clearing.
+Directional-jump checks cover inverted, sideways and compound rotations, matching
+the rendered board, preserving momentum, temporary overspeed and slower acceleration.
+Headless DOM checks cover all scene construction, menus, simulated controller input,
+PB comparisons, cosmetics, board viewing and replay controls without changing saves.
+These are not a GPU browser playtest or a physical-controller playtest. Device-specific
+graphics, audio and control feel still need a real play session.
+
+This is a browser game, not a packaged PlayStation or Xbox console release.
