@@ -6,6 +6,11 @@ All game assets are included locally. index.html is the entry point for static h
 THE OBSTACLE COLLECTION / 31 COURSES
 Six packs: Open Water, High Tide, Golden Hour, After Hours, Vertical Limit, Flow State.
 First Light (level one) keeps its existing track, pads, spawn and finish unchanged.
+Wide Awake, Skyline and Over Under now use complete authored replacements:
+linked bowls and a centre ridge; a terrace descent and landing roof; and a two-tier
+crossing around an open court with its finish separated across the water.
+Try the different lines and compare your runs. Route names and paint do not rank
+their speed for you.
 The other 23 original courses are redesigned around broad obstacle structures.
 Every rebuilt course has its own authored architectural centerpiece, footprint,
 sculpted riding surface and site plan. Paired craters, canyon shells, braided
@@ -13,7 +18,7 @@ ridges, amphitheatres, dunes, vaults and crescents have different shapes, not ju
 different placements. The remaining structures vary in dimensions and elevation;
 each regular course has its own turn sequence and floor-height changes.
 Four additional tower courses — Stacked, Skywell, The Spire and Tower Run — climb
-through five or six floors, with a wide wraparound ascent and narrow express ramp
+through five or six floors, with a wide wraparound ascent and narrow inner ramp
 between each floor. Each tower also has an optional over-vertical launch on its
 first ascent. Build speed along its run-up, ride past vertical, and rotate back
 to wheels-down in the air to reach the catching platform. There is no hidden
@@ -22,14 +27,14 @@ launch impulse or automatic successful flip. All courses are unlocked.
 FLOW STATE adds three authored places with distinct reads. Spillway Run is a long,
 broad downhill that pours into a banked catch and a speed-preserving climb-out;
 the high bank is the optional carry line. Crossfade layers a wide lower ribbon
-under a raised outer ribbon, with a real transfer ramp to change your route.
+under a raised S-shaped ribbon, with a real transfer ramp to change your route.
 Signal Roof is a flowing outer roof bypass or a central kicker with a real, short
-gap to the elevated express roof. These are structures to ride, not random pads.
+gap to the elevated roof. These are structures to ride, not random pads.
 
 The individual centerpieces are connected to supporting structures:
 - Sculpted bowls with low middle lines and higher carved shoulders.
 - Pitched rooftop wedges: ride the ridge or carve around either side.
-- Gridded platforms with real square holes: ONLY in Wide Awake and Heatwave.
+- A gridded platform with real square holes in Heatwave.
 - Three-way descents: wide side ramp, steep side ramp, or a fall into a middle bowl.
 - Curved takeoffs into raised decks, with a longer low route around the jump.
 - Slanted walls that launch across a gap into a separate landing platform.
@@ -42,7 +47,7 @@ with an outside section, or leave the islands early. These are physical, rideabl
 connections, not teleports or forced lanes. Bowls and roofs are open across their
 width, so lines can also be switched by steering across the surface.
 Several courses start high, with three descending choices near the start.
-Orange-edged routes are alternatives. Edge colors are paint, not special terrain.
+Edge colors are paint for structures, not special terrain or speed rankings.
 
 No sectors, ordered gates or checkpoints. The layout itself separates early routes
 from the finish. Skilled shortcuts are allowed; falling restarts the whole run.
@@ -120,20 +125,25 @@ Mouse: use the replay slider and visible playback buttons.
 Only your own local best-run ghosts are available; online spectating is not added.
 
 LOCKER AND SHOP
-22 deck designs, including six animated graphics; eight wheel sets, including
+23 deck designs, including seven animated graphics; eight wheel sets, including
 pulsing and polished-metal wheels. Equip decks and wheels independently.
-Earn tokens through medal progress. Cosmetics do not change physics.
+Svens Board costs exactly 7,777 coins and has animated gold-and-black stripes with
+a fixed Happy B-Day graphic on its top grip. No automatic unlock or free balance
+change is applied. Each completed run earns 50 coins; new medal progress adds
+its normal one-time bonus. Replay viewing, restarting and menu actions never
+award coins. Cosmetics do not change physics.
 There are no real-money purchases. Original, game-generated music plays in menus
 and the Locker. SOUND ON/OFF is at the top right.
 Press a button on a connected controller so the browser can detect it.
 Some browsers require a click or keyboard press before allowing audio to start.
 
 SAVES
-As requested, this update clears ALL best times, archived best times and recorded
-ghosts once when the updated game next loads. That wipe cannot be undone in-game.
-Owned cosmetics, selected wheels and token balances are retained. New records
-earned afterward are saved normally and are NOT cleared on ordinary reloads.
-First Light's layout stays unchanged; its old best is cleared along with the rest.
+The birthday update preserves coins, cosmetics and unaffected course records.
+Wide Awake, Skyline and Over Under receive new layout revisions, archiving their
+old course results and starting new matching best-run ghosts. The old September 6
+one-time score-reset migration remains for saves that never received that earlier
+update; it is not triggered again for saves already migrated. Normal reloads do
+not reset progress.
 Progress is local to this browser and site. Clearing browser data can remove it;
 moving from the local file to a hosted URL does not carry progress to the new site.
 No account, online leaderboard, payments or external service is used.

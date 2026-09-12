@@ -24,7 +24,7 @@
   const flowCourses=[
     ['Spillway Run','A long drop into a banked catch. Carry speed up the far wall.','SPILLWAY'],
     ['Crossfade','A raised ribbon shadows the lower run. Transfer when the opening feels right.','TRANSFER'],
-    ['Signal Roof','A rising roofline: flow the outside, or clear the express gap.','GAP LINE']
+    ['Signal Roof','A rising roofline around an open centre. Choose a roof or an outer ramp.','ROOFLINE']
   ];
   const flowRecipes=['spillway','weave','roofline'];
   flowCourses.forEach(([name,description,difficulty],i)=>{const id=C.levels.length;recipes[id]=[flowRecipes[i]];C.levels.push({id,name,pack:5,width:22,revision:1,difficulty,description,flow:true});});
@@ -193,7 +193,7 @@
         const cross=road([at(-25,42,0),at(-10,58,1),at(0,72,3)],10,'transfer');
         const bypassToCross=bypass.samples.filter(s=>s.p.clone().sub(origin).dot(f)<=42*stretchZ+.75),roofJoin=at(0,72,3),roofRunup=runup.samples.filter(s=>s.p.clone().sub(roofJoin).dot(f)>-.75);
         safe=guide(bypass.samples.map(s=>s.p));
-        alternatives.push({name:'ROOF GAP EXPRESS',path:guide([...runup.samples.map(s=>s.p),...roof.samples.map(s=>s.p)]),entry:at(0,0),exit:at(0,length,endHeight),requiresJump:true,jumpZones:[at(0,89,8)],jumpTargets:[at(0,100,10)]});
+        alternatives.push({name:'ROOF CROSSING',path:guide([...runup.samples.map(s=>s.p),...roof.samples.map(s=>s.p)]),entry:at(0,0),exit:at(0,length,endHeight),requiresJump:true,jumpZones:[at(0,89,8)],jumpTargets:[at(0,100,10)]});
         alternatives.push({name:'EARLY ROOF SETUP',path:guide([...bypassToCross.map(s=>s.p),...cross.samples.map(s=>s.p),...roofRunup.map(s=>s.p),...roof.samples.map(s=>s.p)]),entry:at(0,0),exit:at(0,length,endHeight),requiresJump:true,jumpZones:[at(0,89,8)],jumpTargets:[at(0,100,10)]});
         feature.gap={from:at(0,92,9),to:at(0,100,10)};
       }else if(type==='slalom'){
@@ -220,7 +220,7 @@
         const upperY=origin.y+36,next=v(0,upperY,0);
         const wrap=road([cursor.clone(),cursor.clone().addScaledVector(f,15),at(70,length+68,6),v(102,origin.y+17,origin.z-length/2),v(86,upperY-7,28),v(30,upperY,30),next],20,'ascent');extend(wrap);
         const express=road([cursor.clone(),cursor.clone().addScaledVector(f,12),at(-50,length+62,9),v(-65,upperY-8,origin.z-length/2),v(-50,upperY,15),v(-22,upperY,24),next],8,'shortcut');
-        alternatives.push({name:'FLOOR '+(i+1)+' EXPRESS RAMP',path:express,entry:cursor.clone(),exit:next.clone()});
+        alternatives.push({name:'FLOOR '+(i+1)+' INNER RAMP',path:express,entry:cursor.clone(),exit:next.clone()});
         // A third ascent uses momentum through a genuinely over-vertical lip.
         // The launch is physical: no pad, teleport, scripted impulse or auto-flip.
         if(i===0){

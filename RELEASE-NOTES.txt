@@ -1,6 +1,14 @@
-DECK — FLOW STATE UPDATE
+DECK — FIND YOUR LINE / SVEN'S BIRTHDAY
+
+- Adds Svens Board for 7,777 earned coins: animated gold-and-black stripes and a stationary Happy B-Day grip graphic.
+- Every completed run earns 50 coins. First-time medal progress adds its normal bonus; replays do not award currency.
+- Rebuilds Wide Awake, Skyline and Over Under as complete linked-bowl, descending-terrace and crossing-bridge courses.
+- Routes use neutral presentation. Find your preferred line by riding them; no route is labelled fastest.
+- Preserves First Light. Only the three replaced layouts move to new record/ghost revisions; owned cosmetics and coins stay intact.
+
+ALSO INCLUDED FROM THE PREVIOUS UNPUBLISHED POLISH PASS
 
 - Adds the FLOW STATE pack: Spillway Run, Crossfade, and Signal Roof (31 courses total).
 - Finishes the responsive menu, readable HUD, Settings screen, controller reconnect handling, and refined board presentation.
-- Preserves First Light, all existing course IDs and saves; the new courses append naturally.
+- Preserves existing course IDs; the three FLOW STATE courses append naturally.
 - Cache versions are bumped so GitHub Pages serves the complete update.
