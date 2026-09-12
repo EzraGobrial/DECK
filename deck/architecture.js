@@ -29,7 +29,10 @@
   ['Stacked Courtyard',114,170,0,.22,[],[],(q,u)=>14*q*q-12*(1-q*q)*sin(P*u)**2+7*q*sin(2*P*u)],
   ['Skywell Atrium',126,182,0,-.26,[],[],(q,u)=>-14*(ridge(q,-.35,.27)+ridge(q,.35,.27))*sin(P*u)**2+6*q*q],
   ['Spire Buttresses',106,174,0,.24,[],[],(q,u)=>16*ridge(q,0,.21)*sin(P*u)-9*(1-q*q)*sin(2*P*u)**2],
-  ['Summit Keystone',132,190,0,-.22,[],[],(q,u)=>12*q*sin(2*P*u)+15*q*q-10*bump(u,.55,.2)]
+  ['Summit Keystone',132,190,0,-.22,[],[],(q,u)=>12*q*sin(2*P*u)+15*q*q-10*bump(u,.55,.2)],
+  ['Spillway Crown',138,310,-10,.18,[],[],(q,u)=>-18*sin(P*u)**2+10*q*q*sin(P*u)],
+  ['Crossfade Exchange',124,272,0,-.2,[],[],(q,u)=>10*q*sin(2*P*u)+7*q*q],
+  ['Roofline Signal',118,286,12,.24,[],[],(q,u)=>12*(1-q*q)*sin(P*u)+7*q*sin(2*P*u)]
  ];
  const footprints=[null,
   u=>.3+.7*sin(2*P*u)**2,
@@ -58,7 +61,10 @@
   u=>.65+.35*sin(P*u),
   u=>.35+.65*sin(2*P*u)**2,
   u=>.32+.68*(1-abs(2*u-1)),
-  u=>.5+.5*sin(3*P*u)**2
+  u=>.5+.5*sin(3*P*u)**2,
+  u=>.72+.28*sin(P*u),
+  u=>.58+.42*sin(P*u)**2,
+  u=>.5+.5*(1-abs(2*u-1))
  ];
  global.DeckCore.architectures=rows.map((r,id)=>r&&({id,name:r[0],width:r[1],length:r[2],rise:r[3],lane:r[4],turns:r[5],floors:r[6],sculpt:r[7],footprint:footprints[id],bend:.08+.025*(id%6)}));
 })(typeof window!=='undefined'?window:globalThis);

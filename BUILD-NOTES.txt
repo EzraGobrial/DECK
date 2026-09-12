@@ -3,8 +3,8 @@ DECK — ONE MORE RUN
 Open deck-prototype.html in a modern desktop browser. Keep the deck folder beside it.
 All game assets are included locally. index.html is the entry point for static hosting.
 
-THE OBSTACLE COLLECTION / 28 COURSES
-Five packs: Open Water, High Tide, Golden Hour, After Hours, Vertical Limit.
+THE OBSTACLE COLLECTION / 31 COURSES
+Six packs: Open Water, High Tide, Golden Hour, After Hours, Vertical Limit, Flow State.
 First Light (level one) keeps its existing track, pads, spawn and finish unchanged.
 The other 23 original courses are redesigned around broad obstacle structures.
 Every rebuilt course has its own authored architectural centerpiece, footprint,
@@ -18,6 +18,13 @@ between each floor. Each tower also has an optional over-vertical launch on its
 first ascent. Build speed along its run-up, ride past vertical, and rotate back
 to wheels-down in the air to reach the catching platform. There is no hidden
 launch impulse or automatic successful flip. All courses are unlocked.
+
+FLOW STATE adds three authored places with distinct reads. Spillway Run is a long,
+broad downhill that pours into a banked catch and a speed-preserving climb-out;
+the high bank is the optional carry line. Crossfade layers a wide lower ribbon
+under a raised outer ribbon, with a real transfer ramp to change your route.
+Signal Roof is a flowing outer roof bypass or a central kicker with a real, short
+gap to the elevated express roof. These are structures to ride, not random pads.
 
 The individual centerpieces are connected to supporting structures:
 - Sculpted bowls with low middle lines and higher carved shoulders.

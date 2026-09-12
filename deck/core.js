@@ -242,11 +242,14 @@
   class Runner {
     constructor(world){this.world=world;this.reset();}
     boardUp(){return v(0,1,0).applyEuler(new T.Euler(this.pitchTilt,0,-this.tilt)).applyAxisAngle(v(0,1,0),-this.heading);}
-    reset(){this.p=this.world.spawn.clone();this.velocity=v();this.heading=this.world.heading;this.grounded=false;this.normal=v(0,1,0);this.jumps=0;this.elapsed=0;this.started=false;this.won=false;this.padCooldown=new Map();this.bumperCooldown=new Map();this.events=[];this.coyote=.1;this.tilt=0;this.pitchTilt=0;this.airTime=0;this.surface=null;this.takeoffSurface=null;this.airStart=this.p.clone();this.progress=0;this.boostTime=0;this.reboundTime=0;this.launchTime=0;this.jumpSpeedTime=0;this.lastLanding=null;this.crashTime=0;}
+    reset(){this.p=this.world.spawn.clone();this.velocity=v();this.heading=this.world.heading;this.grounded=false;this.normal=v(0,1,0);this.jumps=0;this.elapsed=0;this.started=false;this.won=false;this.padCooldown=new Map();this.bumperCooldown=new Map();this.events=[];this.coyote=.1;this.jumpBuffer=0;this.tilt=0;this.pitchTilt=0;this.airTime=0;this.surface=null;this.surfaceIsVert=false;this.contactForward=null;this.takeoffSurface=null;this.airStart=this.p.clone();this.progress=0;this.boostTime=0;this.reboundTime=0;this.launchTime=0;this.jumpSpeedTime=0;this.lastLanding=null;this.crashTime=0;}
     step(dt,input={}){
       this.events=[];if(this.won)return;const previousPosition=this.p.clone(),wasGrounded=this.grounded;
       this.airTime=this.grounded?0:this.airTime+dt;
       this.crashTime=Math.max(0,this.crashTime-dt);
+      // Remember a fresh press just before touchdown. Consume it once, so a
+      // near-perfect transfer input survives a frame without repeated auto-jumps.
+      this.jumpBuffer=this.crashTime>0?0:(input.jump ? .10 : Math.max(0,this.jumpBuffer-dt));
       const steer=clamp(input.steer||0,-1,1),throttle=this.crashTime>0?0:clamp(input.throttle||0,-1,1);
       if(throttle||input.jump)this.started=true;if(this.started)this.elapsed+=dt;
       this.boostTime=Math.max(0,this.boostTime-dt);this.reboundTime=Math.max(0,this.reboundTime-dt);this.launchTime=Math.max(0,this.launchTime-dt);
@@ -279,14 +282,14 @@
         this.tilt+=clamp(input.tilt||0,-1,1)*3.4*dt;
         this.pitchTilt+=clamp(input.pitch||0,-1,1)*3.4*dt;
       }
-      if(input.jump && this.crashTime<=0 && (this.grounded||this.coyote>0||this.jumps<2)){
+      if(this.jumpBuffer>0 && this.crashTime<=0 && (this.grounded||this.coyote>0||this.jumps<2)){
         // Jump away from the deck's top, not world-up. Ground jumps follow the
         // riding surface; air jumps follow the same pitch/roll/yaw as the board.
         // Add an impulse so leaning can redirect a run without wiping its momentum.
         const first=this.grounded||this.coyote>0,direction=this.grounded?this.normal.clone():this.boardUp(),beforeJumpSpeed=Math.hypot(this.velocity.x,this.velocity.z);
         this.velocity.addScaledVector(direction,first?10.6:11.0);
         if(Math.hypot(this.velocity.x,this.velocity.z)>Math.max(43,beforeJumpSpeed+.1))this.jumpSpeedTime=.9;
-        this.jumps=first?1:2;this.grounded=false;this.coyote=0;this.events.push(first?'jump':'double');
+        this.jumps=first?1:2;this.grounded=false;this.coyote=0;this.jumpBuffer=0;this.events.push(first?'jump':'double');
       }
       this.velocity.y-=25*dt;
       const horizontal=Math.hypot(this.velocity.x,this.velocity.z),cap=this.boostTime>0||this.reboundTime>0||this.launchTime>0?76:this.jumpSpeedTime>0?54:43;
@@ -355,7 +358,7 @@
         if(!wasGrounded&&this.airTime>.15&&boardUp.dot(this.normal)<.35){
           // A missed wheels-down landing stops the run's momentum, not the run.
           // Presentation rotates the board upright during this brief recovery.
-          this.velocity.set(0,0,0);this.boostTime=0;this.reboundTime=0;this.jumpSpeedTime=0;this.crashTime=.45;this.events.push('crash');
+          this.velocity.set(0,0,0);this.boostTime=0;this.reboundTime=0;this.jumpSpeedTime=0;this.jumpBuffer=0;this.crashTime=.45;this.events.push('crash');
           this.tilt=Math.asin(clamp(this.normal.dot(v(Math.cos(this.heading),0,Math.sin(this.heading))),-1,1));
           this.pitchTilt=Math.atan2(-this.normal.dot(v(Math.sin(this.heading),0,-Math.cos(this.heading))),this.normal.y);
         }else if(!wasGrounded&&this.airTime>.15&&impactVelocity.dot(this.normal)<-1){
@@ -398,7 +401,15 @@
       // Only the visible finish line matters. No ordered route checks, minimum
       // progress/time requirements, or hidden rejection of a successful shortcut.
       const finish=this.world.finish,tangent=finish.t.clone().setY(0).normalize(),right=v(-tangent.z,0,tangent.x),from=previousPosition.clone().sub(finish.p),to=this.p.clone().sub(finish.p);
-      if(this.started&&from.dot(tangent)<=0&&to.dot(tangent)>=0&&Math.abs(to.dot(right))<(this.world.level.width+2)/2&&(!this.world.tower||this.p.y>=finish.p.y-.6)){this.won=true;this.events.push('finish');}
+      const beforeLine=from.dot(tangent),afterLine=to.dot(tangent);
+      if(this.started&&beforeLine<=0&&afterLine>=0&&afterLine>beforeLine){
+        // Judge the swept crossing itself, not the end of a physics frame. This
+        // keeps diagonal edge finishes fair and preserves millisecond PB timing.
+        const fraction=clamp(-beforeLine/(afterLine-beforeLine),0,1),crossing=previousPosition.clone().lerp(this.p,fraction);
+        if(Math.abs(crossing.clone().sub(finish.p).dot(right))<(this.world.level.width+2)/2&&(!this.world.tower||crossing.y>=finish.p.y-.6)){
+          this.p.copy(crossing);this.elapsed=Math.max(0,this.elapsed-dt*(1-fraction));this.won=true;this.events.push('finish');
+        }
+      }
       if(this.p.y<-5){this.events.push('fall');}
     }
   }

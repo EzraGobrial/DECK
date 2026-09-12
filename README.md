@@ -13,7 +13,7 @@ Open `index.html` in a modern browser, or enable GitHub Pages for this repositor
 
 ## Included
 
-- 28 time-trial courses with stacked floors, towers, routes, transfers, ramps, bowls, boosts, jump pads, and bumpers.
+- 31 time-trial courses across six packs, including the new Flow State spillway, elevated transfer, and rooftop gap routes.
 - Local personal-best saves and your best-run ghost replay.
 - Controller menus, Locker, cosmetic board/wheel shop, and generated menu music.
 

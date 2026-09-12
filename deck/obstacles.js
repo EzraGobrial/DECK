@@ -17,10 +17,21 @@
   const towerNames=['Stacked','Skywell','The Spire','Tower Run'];
   const towerRecipes=[['bowl','grid','roof','slalom','terrace'],['grid','roof','bowl','islands','terrace'],['roof','slalom','grid','bowl','terrace'],['bowl','islands','roof','grid','slalom','terrace']];
   towerNames.forEach((name,i)=>{const id=C.levels.length;recipes[id]=towerRecipes[i];C.levels.push({id,name,pack:4,width:18,revision:5,difficulty:i===3?'SUMMIT':'TOWER',tower:true});});
+  // FLOW STATE is deliberately authored as three complete places, rather than
+  // another shuffle of the arena recipe. Each has one generous read and one
+  // clearly visible faster idea that can be practiced independently.
+  C.packs.push({name:'FLOW STATE',subtitle:'Read the shape. Commit to the line.',color:'#22a7c8',sky:'#d7f1f4',water:'#3b8ea5'});
+  const flowCourses=[
+    ['Spillway Run','A long drop into a banked catch. Carry speed up the far wall.','SPILLWAY'],
+    ['Crossfade','A raised ribbon shadows the lower run. Transfer when the opening feels right.','TRANSFER'],
+    ['Signal Roof','A rising roofline: flow the outside, or clear the express gap.','GAP LINE']
+  ];
+  const flowRecipes=['spillway','weave','roofline'];
+  flowCourses.forEach(([name,description,difficulty],i)=>{const id=C.levels.length;recipes[id]=[flowRecipes[i]];C.levels.push({id,name,pack:5,width:22,revision:1,difficulty,description,flow:true});});
   // Hole grids are rare: exactly two in the entire collection, never every floor.
   for(let id=1;id<recipes.length;id++)if(![1,14].includes(id))recipes[id]=recipes[id].map((type,i)=>type==='grid'?['wave','spine','fork'][(id+i)%3]:type);
-  for(let id=1;id<recipes.length;id++){const slot=recipes[id][0]==='drop'?(id===14?2:1):0;recipes[id][slot]='landmark';}
-  for(const l of C.levels)if(l.id){l.revision=5;l.description=C.architectures[l.id].name+' · '+(l.tower?recipes[l.id].length+' floors · Momentum launch':recipes[l.id].filter(t=>t!=='landmark').slice(0,2).map(t=>names[t]).join(' · '));}
+  for(let id=1;id<28;id++){const slot=recipes[id][0]==='drop'?(id===14?2:1):0;recipes[id][slot]='landmark';}
+  for(const l of C.levels)if(l.id&&!l.flow){l.revision=5;l.description=C.architectures[l.id].name+' · '+(l.tower?recipes[l.id].length+' floors · Momentum launch':recipes[l.id].filter(t=>t!=='landmark').slice(0,2).map(t=>names[t]).join(' · '));}
 
   // Arc-length sampled guides are for maps / tests only. Collision consists solely
   // of the visible pieces. A guide through a gap never creates a road there.
@@ -148,6 +159,43 @@
         alternatives.push({name:'BRIDGE TO ISLANDS',path:guide([...enterPoints,...hop.samples.filter(s=>distance(s.p)>98).map(s=>s.p)]),entry:at(0,0),exit:at(0,length),requiresJump:true,jumpZones:jumpZones.slice(2),jumpTargets:jumpTargets.slice(2)});
         alternatives.push({name:'ISLANDS TO BRIDGE',path:guide([...hop.samples.filter(s=>distance(s.p)<124).map(s=>s.p),...leavePoints]),entry:at(0,0),exit:at(0,length),requiresJump:true,jumpZones:jumpZones.slice(0,3),jumpTargets:jumpTargets.slice(0,3)});
         alternatives.push({name:'MIXED TRANSFER LINE',path:guide([...enterPoints,...hop.samples.filter(s=>distance(s.p)>98&&distance(s.p)<124).map(s=>s.p),...leavePoints]),entry:at(0,0),exit:at(0,length),requiresJump:true,jumpZones:jumpZones.slice(2,3),jumpTargets:jumpTargets.slice(2,3)});
+      }else if(type==='spillway'){
+        // One broad continuous form: a downhill spillway, a deep banked catch,
+        // then a climb-out. The fast line is a high wall carve, not a gadget.
+        length=310;width=96;endHeight=-10;
+        const h=(x,s)=>{const drop=-27*ease(Math.min(1,s/112));if(s<112)return drop;
+          if(s<218){const u=(s-112)/106;return -27-2*ease(u)+15*(x/(width/2))**2*Math.sin(Math.PI*u)**.72-2*Math.sin(Math.PI*u)**2;}
+          return -29+19*ease((s-218)/92);};
+        world?.surface((a,b)=>{const x=(a-.5)*width*(.78+.22*Math.sin(Math.PI*b));return at(x,b*length,h(x,b*length));},48,155,'bowl');
+        safe=localRoute(s=>at(-5*Math.sin(Math.PI*s/length),s,h(-5*Math.sin(Math.PI*s/length),s)),length);
+        const wall=localRoute(s=>{const x=34*Math.sin(Math.PI*Math.min(1,s/220))**.72;return at(x,s,h(x,s));},length);
+        alternatives.push({name:'HIGH BANK CARRY',path:wall,entry:at(0,0),exit:at(0,length,endHeight)});
+        if(world){const p=mark(31,132,h(31,132)+.3);world.pads.push({...p,type:'boost',radius:2.5,speed:56});}
+      }else if(type==='weave'){
+        // Two actual elevated ribbons cross at different heights. The transfer
+        // decks are optional, letting the rider change a plan without a reset.
+        length=272;width=92;endHeight=0;
+        const low=road([at(0,0),at(-16,72,0),at(-21,186,0),at(0,length,0)],30,'deck');
+        const high=road([at(0,0),at(24,34,7),at(42,88,15),at(37,142,15),at(36,210,15),at(26,238,8),at(9,length,5),at(9,length+46,5)],12,'ascent');
+        const transferIn=road([at(0,58,0),at(10,72,4),at(25,86,12),at(38,96,15)],11,'transfer');
+        const upperJoin=high.samples.reduce((best,s)=>s.p.distanceToSquared(transferIn.samples.at(-1).p)<best.p.distanceToSquared(transferIn.samples.at(-1).p)?s:best);
+        safe=guide(low.samples.map(s=>s.p));
+        alternatives.push({name:'UPPER WEAVE',path:guide(high.samples.map(s=>s.p)),entry:at(0,0),exit:at(9,length+46,5)});
+        alternatives.push({name:'CROSSFADE TRANSFER',path:guide([...low.samples.filter(s=>s.u<.22).map(s=>s.p),...transferIn.samples.map(s=>s.p),...high.samples.filter(s=>s.s>upperJoin.s).map(s=>s.p)]),entry:at(0,0),exit:at(9,length+46,5)});
+        feature.transfers=[transferIn];
+      }else if(type==='roofline'){
+        // A readable outer bypass rises without asking for a jump. The central
+        // kicker leaves a real gap to the rooftop, rewarding a committed jump.
+        length=286;width=86;endHeight=12;
+        const bypass=road([at(0,0),at(-25,42,0),at(-34,102,3),at(-28,178,11),at(-14,230,12),at(0,length,12)],32,'deck');
+        const runup=road([at(0,0),at(0,48,0),at(0,78,4),at(0,92,9)],16,'roof');
+        const roof=road([at(0,100,10),at(0,164,16),at(8,218,14),at(0,length,12)],18,'roof');
+        const cross=road([at(-25,42,0),at(-10,58,1),at(0,72,3)],10,'transfer');
+        const bypassToCross=bypass.samples.filter(s=>s.p.clone().sub(origin).dot(f)<=42*stretchZ+.75),roofJoin=at(0,72,3),roofRunup=runup.samples.filter(s=>s.p.clone().sub(roofJoin).dot(f)>-.75);
+        safe=guide(bypass.samples.map(s=>s.p));
+        alternatives.push({name:'ROOF GAP EXPRESS',path:guide([...runup.samples.map(s=>s.p),...roof.samples.map(s=>s.p)]),entry:at(0,0),exit:at(0,length,endHeight),requiresJump:true,jumpZones:[at(0,89,8)],jumpTargets:[at(0,100,10)]});
+        alternatives.push({name:'EARLY ROOF SETUP',path:guide([...bypassToCross.map(s=>s.p),...cross.samples.map(s=>s.p),...roofRunup.map(s=>s.p),...roof.samples.map(s=>s.p)]),entry:at(0,0),exit:at(0,length,endHeight),requiresJump:true,jumpZones:[at(0,89,8)],jumpTargets:[at(0,100,10)]});
+        feature.gap={from:at(0,92,9),to:at(0,100,10)};
       }else if(type==='slalom'){
         length=132;width=78;slab(origin,f,r,width,length,()=>0,'deck');
         const centers=[{x:-5,s:43},{x:5,s:89}];

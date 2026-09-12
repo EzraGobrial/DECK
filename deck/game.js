@@ -5,9 +5,11 @@
  $('.home-description').innerHTML='Just you, four wheels, and the perfect line.<br>'+C.levels.length+' courses. Countless ways to get there.';$('.home-stamp').innerHTML=C.levels.length+'<span>TRACKS<br>TO MASTER</span>';$('#levels .eyebrow').textContent='THE COLLECTION / '+C.levels.length+' COURSES';
  const deltaPanel=document.createElement('div');deltaPanel.id='result-delta';deltaPanel.hidden=true;$('#modal-stats').after(deltaPanel);
  const effectHud=document.createElement('div');effectHud.id='effect-hud';effectHud.innerHTML='<div id="boost-status"><b>BOOST</b><i><span></span></i></div><div id="ghost-status"></div>';$('#hud').append(effectHud);
- $('.controls').innerHTML='<strong>CONTROLLER / HOLD TO FLIP</strong><div><kbd>R2 / RT</kbd> GO <kbd>L2 / LT</kbd> BRAKE</div><div><kbd>LS ← →</kbd> STEER <kbd>LS ↑ ↓</kbd> FRONT / BACK FLIP</div><div><kbd>L1 / R1</kbd> ROLL LEFT / RIGHT <kbd>✕ / A</kbd> DOUBLE JUMP</div><div><kbd>R3</kbd> RESTART <kbd>START</kbd> PAUSE</div><small>Jump away from deck top · Release to hold angle · WASD / arrows · Space jump · Q/E roll · I/K flip · R reset · Esc pause</small>';
+ $('.controls').innerHTML='<strong>CONTROLLER / HOLD TO FLIP</strong><div><kbd>R2</kbd> GO <kbd>L2</kbd> BRAKE / REVERSE</div><div><kbd>LS ← →</kbd> STEER <kbd>LS ↑ ↓</kbd> FRONT / BACK FLIP</div><div><kbd>L1 / R1</kbd> ROLL LEFT / RIGHT <kbd>✕</kbd> DOUBLE JUMP</div><div><kbd>R3</kbd> RESTART <kbd>OPTIONS</kbd> PAUSE</div><small>Jump away from deck top · Release to hold angle · WASD / arrows · Space jump · Q/E roll · I/K flip · R reset · Esc pause</small>';
  const replayScreen=document.createElement('section');replayScreen.id='replays';replayScreen.className='screen';replayScreen.setAttribute('aria-label','Your best-run replays');$('#ui').append(replayScreen);
  const replayLink=document.createElement('button');replayLink.dataset.action='replays';replayLink.innerHTML='<span>04</span>MY REPLAYS<span class="nav-arrow">↗</span>';$('.home-nav').append(replayLink);
+ const settingsScreen=document.createElement('section');settingsScreen.id='settings';settingsScreen.className='screen';settingsScreen.setAttribute('aria-label','Game settings');$('#ui').append(settingsScreen);
+ const settingsLink=document.createElement('button');settingsLink.dataset.action='settings';settingsLink.innerHTML='<span>05</span>SETTINGS<span class="nav-arrow">↗</span>';$('.home-nav').append(settingsLink);
  const orbitHint=document.createElement('div');orbitHint.id='orbit-hint';orbitHint.innerHTML='<kbd>RIGHT STICK</kbd> ROTATE VIEW <span>J/L · U/O on keyboard</span>';$('#ui').append(orbitHint);
  const replayBar=document.createElement('div');replayBar.id='replay-bar';replayBar.hidden=true;replayBar.innerHTML='<div><strong>YOUR BEST · GHOST VIEW</strong><span id="replay-time"></span></div><input id="replay-seek" type="range" min="0" max="1000" value="0" aria-label="Replay position"><div class="replay-actions"><button data-action="replay-toggle">PAUSE · ✕</button><button data-action="replay-restart">RESTART · R3</button><button data-action="replay-exit">BACK · ○</button></div>';document.body.append(replayBar);
  const skins=[
@@ -49,6 +51,10 @@
    save.layoutRevisions=layoutRevisions;
  }}catch{}
  if(!skins.some(s=>s.id===save.skin))save.skin='red';
+ const settingDefaults={steering:1,airControl:1,deadzone:.17,music:1};
+ const settingSteps={steering:[.6,.8,1],airControl:[.6,.8,1],deadzone:[.08,.12,.17,.22,.28],music:[0,.25,.5,.75,1]};
+ save.settings={...settingDefaults,...(save.settings&&typeof save.settings==='object'?save.settings:{})};
+ for(const name of Object.keys(settingDefaults))if(!settingSteps[name].includes(save.settings[name]))save.settings[name]=settingDefaults[name];
  // One requested score wipe for this update; never repeat it on normal reloads.
  if(save.scoreReset!=='2026-09-06-architecture-v1'){
    save.bests={};delete save.archivedCourseRecords;delete save.previousCourseRecords;
@@ -58,7 +64,7 @@
  const persist=()=>{try{localStorage.setItem('deck-v2',JSON.stringify(save));}catch{}};
  persist();
  const format=t=>`${String(Math.floor(t/60)).padStart(2,'0')}:${(t%60).toFixed(3).padStart(6,'0')}`;
- let mode='home',pack=0,levelIndex=0,world,runner,selected=null,pendingJump=false,accumulator=0,active=true;
+ let mode='home',pack=0,levelIndex=0,world,runner,selected=null,pendingJump=false,accumulator=0,active=true,settingsReturn='home';
  const keys=new Set(),padState={previous:[],nav:0,next:0,index:null,armed:true};
  let userInput={steer:0,throttle:0,tilt:0,pitch:0};
  let orbitYaw=0,orbitPitch=0,orbitInput={x:0,y:0},replay=null;
@@ -70,6 +76,7 @@
  const scene=new T.Scene(),camera=new T.PerspectiveCamera(62,innerWidth/innerHeight,.07,2500);
  const ambient=new T.HemisphereLight('#dff4ff','#56747f',2.0);scene.add(ambient);
  const sun=new T.DirectionalLight('#fff0d3',2.7);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);sun.shadow.camera.left=-50;sun.shadow.camera.right=50;sun.shadow.camera.top=50;sun.shadow.camera.bottom=-50;sun.shadow.camera.near=1;sun.shadow.camera.far=180;sun.shadow.normalBias=.05;sun.shadow.bias=-.00006;scene.add(sun,sun.target);
+ const menuFill=new T.DirectionalLight('#eaf7ff',1.4),menuRim=new T.DirectionalLight('#ffffff',1.8);menuFill.position.set(9,17,12);menuRim.position.set(-4,12,-8);scene.add(menuFill,menuFill.target,menuRim,menuRim.target);
  const skyUniform={top:{value:new T.Color('#59a8cf')},bottom:{value:new T.Color('#e4f4fa')}};
  const sky=new T.Mesh(new T.SphereGeometry(2000,24,16),new T.ShaderMaterial({side:T.BackSide,depthWrite:false,uniforms:skyUniform,vertexShader:'varying vec3 d;void main(){d=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',fragmentShader:'uniform vec3 top;uniform vec3 bottom;varying vec3 d;void main(){float h=clamp(normalize(d).y*.8+.25,0.,1.);gl_FragColor=vec4(mix(bottom,top,h),1.);}'}));scene.add(sky);
  const waterUniform={time:{value:0},color:{value:new T.Color('#3598b4')}};
@@ -211,9 +218,9 @@
  }
  // Original ambient loop. Audio starts only after a user gesture.
  let audio,master,musicGain,nextBeat=0,beat=0,toastTimer,eventTimer;
- function unlockAudio(){if(!audio){const Audio=window.AudioContext||window.webkitAudioContext;if(!Audio)return;audio=new Audio();master=audio.createGain();master.gain.value=save.muted?0:.24;master.connect(audio.destination);musicGain=audio.createGain();musicGain.gain.value=.5;musicGain.connect(master);}if(audio.state==='suspended')audio.resume().catch(()=>{});}
+ function unlockAudio(){if(!audio){const Audio=window.AudioContext||window.webkitAudioContext;if(!Audio)return;audio=new Audio();master=audio.createGain();master.gain.value=save.muted?0:.24;master.connect(audio.destination);musicGain=audio.createGain();musicGain.gain.value=.45*save.settings.music;musicGain.connect(master);}if(audio.state==='suspended')audio.resume().catch(()=>{});}
  function tone(freq,time,length,volume,wave='sine',destination=musicGain){if(!audio)return;const o=audio.createOscillator(),g=audio.createGain();o.type=wave;o.frequency.value=freq;g.gain.setValueAtTime(.0001,time);g.gain.exponentialRampToValueAtTime(volume,time+.012);g.gain.exponentialRampToValueAtTime(.0001,time+length);o.connect(g);g.connect(destination);o.start(time);o.stop(time+length+.03);}
- function music(){if(!audio||audio.state!=='running')return;const menuMode=!['race','pause','finish','replay'].includes(mode);musicGain.gain.setTargetAtTime(menuMode?.45:.11,audio.currentTime,.2);if(nextBeat<audio.currentTime)nextBeat=audio.currentTime+.03;
+ function music(){if(!audio||audio.state!=='running')return;const menuMode=!['race','pause','finish','replay'].includes(mode);musicGain.gain.setTargetAtTime((menuMode?.45:.11)*save.settings.music,audio.currentTime,.2);if(nextBeat<audio.currentTime)nextBeat=audio.currentTime+.03;
    while(nextBeat<audio.currentTime+.10){const step=beat%16,chord=[[55,60,64,67],[53,57,60,64],[57,60,64,69],[55,59,62,67]][Math.floor(beat/32)%4],hz=n=>440*2**((n-69)/12);
      if(step%4===0){tone(hz(chord[0]-12),nextBeat,.37,.29,'triangle');tone(62,nextBeat,.11,.20,'sine');}
      if(step%2===0)tone(hz(chord[(step/2)%4]+12),nextBeat,.32,.085,'sine');
@@ -247,6 +254,14 @@
    $('#shop-grid').innerHTML=skins.filter(s=>s.price).map((s,i)=>`<article class="shop-card"><div class="deck-swatch ${s.animated?'animated-deck':''}" style="background:linear-gradient(125deg,${s.color} 45%,${s.second} 46% 69%,${s.color} 70%)"></div><h3>${s.name}</h3><p>${s.animated?'ANIMATED GRAPHIC · flowing color':'DECK GRAPHIC · matching boost trail'}<br>Cosmetic only. Same performance.</p><strong>◈ ${s.price} TOKENS</strong><button data-buy="${s.id}" ${i===0?'data-default':''}>${save.owned.includes(s.id)?'EQUIP':save.coins>=s.price?'UNLOCK':'EARN '+(s.price-save.coins)+' MORE'}</button></article>`).join('')+'<h3 class="catalog-heading">WHEEL WORKSHOP / 7 SETS</h3>'+wheelStyles.filter(w=>w.price).map(w=>`<article class="shop-card"><div class="wheel-swatch" style="--wheel:${w.color}"></div><h3>${w.name}</h3><p>${w.animated?'ANIMATED · pulsing glow':w.metal?'POLISHED METAL FINISH':'COLORED URETHANE'}<br>Four wheels. Your style.</p><strong>◈ ${w.price} TOKENS</strong><button data-buy-wheel="${w.id}">${save.ownedWheels.includes(w.id)?'EQUIP':save.coins>=w.price?'UNLOCK':'EARN '+(w.price-save.coins)+' MORE'}</button></article>`).join('');
  }
  function refreshWallet(){$('#wallet').textContent='◈ '+save.coins;$('#audio-toggle').textContent=save.muted?'SOUND OFF':'SOUND ON';}
+ function renderSettings(focusName){
+   const percent=n=>Math.round(n*100)+'%',cards=[['steering','STEERING',percent(save.settings.steering),'How strongly the left stick turns. Lower it for finer lines.'],['airControl','AIR ROTATION',percent(save.settings.airControl),'Flip and roll speed. Lower it for easier wheel-down landings.'],['deadzone','STICK DEADZONE',percent(save.settings.deadzone),'Raise this if the board or camera moves without you.'],['music','MUSIC VOLUME',percent(save.settings.music),'Your menu soundtrack and quieter music during a run.'],['sound','GAME SOUND',save.muted?'OFF':'ON','Turn all music and game effects on or off.'],['ghost','BEST-RUN GHOST',save.ghost?'ON':'OFF','Race the ghost of your saved personal best.']];
+   settingsScreen.innerHTML='<div class="page-heading"><div><p class="eyebrow">MAKE IT FEEL RIGHT</p><h2>Your setup.</h2></div><button data-action="settings-back">← '+(settingsReturn==='pause'?'PAUSED RUN':'HOME')+'</button></div><p class="section-copy">Select a setting and press ✕ to change it. Your choices save automatically.</p><div class="settings-grid">'+cards.map(([key,title,value,copy],i)=>`<button class="settings-card" data-setting="${key}" ${i===0?'data-default':''} aria-label="${title}: ${value}. Press Cross or Enter to change."><strong>${title}</strong><span class="settings-value">${value}</span><small>${copy}</small></button>`).join('')+'</div><div class="controller-guide"><strong>DUALSENSE CONTROLS</strong><p>R2 accelerate · L2 brake / reverse · Left stick steer · ✕ jump / double jump</p><p>In the air: left stick up / down flips · L1 rolls left · R1 rolls right</p><p>R3 restart · Options pause · ○ back · Right stick rotates your board in Home and Locker</p><small>Keyboard: WASD / arrows drive · Space jump · Q / E roll · I / K flip · R restart · Esc pause / back</small></div>';
+   if(focusName)focusButton(settingsScreen.querySelector('[data-setting="'+focusName+'"]'));
+ }
+ function changeSetting(name){if(name==='sound'){save.muted=!save.muted;if(master)master.gain.setTargetAtTime(save.muted?0:.24,audio.currentTime,.03);refreshWallet();}else if(name==='ghost')save.ghost=!save.ghost;else if(settingSteps[name]){const values=settingSteps[name];save.settings[name]=values[(values.indexOf(save.settings[name])+1)%values.length];}persist();renderSettings(name);}
+ function openSettings(){settingsReturn=mode==='pause'?'pause':'home';showScreen('settings');}
+ function closeSettings(){if(settingsReturn!=='pause'){showScreen('home');return;}$('#ui').style.display='none';$('#hud').hidden=false;track.visible=true;particleMesh.visible=true;boardRoot.visible=true;cameraInit=false;mode='race';pause();}
  function replayData(id){try{const data=JSON.parse(localStorage.getItem(ghostKey(id)));if(data&&Array.isArray(data.frames)&&data.frames.length>1&&data.frames.every(f=>Array.isArray(f)&&f.length>=7&&f.every(Number.isFinite))&&Math.abs(data.time-save.bests[id])<.02)return data;}catch{}return null;}
  function renderReplays(){const available=C.levels.filter(l=>replayData(l.id));replayScreen.innerHTML='<div class="page-heading"><div><p class="eyebrow">YOUR PERSONAL BESTS</p><h2>Ride it again.</h2></div><button data-action="home">← HOME</button></div><p class="section-copy">Watch from your ghost’s view. Playback never changes your times or tokens.</p><div class="replay-list">'+(available.length?available.map(l=>`<button data-watch="${l.id}"><span>▶</span><strong>${l.name}</strong><small>${format(save.bests[l.id])} · WATCH YOUR BEST</small></button>`).join(''):'<div class="empty-replays"><h3>Your first replay is waiting.</h3><p>Finish a course to save a best-run ghost, then watch it here.</p><button data-action="levels">PLAY A COURSE →</button></div>')+'</div>';}
  function startReplay(id){const data=replayData(id);if(!data){toast('Finish this course to save a replay first.');return;}startLevel(id);mode='replay';replay={frames:data.frames,time:0,duration:data.frames.at(-1)[0],index:0,paused:false};replayBar.hidden=false;$('.controls').hidden=true;$('#air-jump').hidden=true;$('#effect-hud').hidden=true;$('#pause-button').hidden=true;$('#event-toast').style.opacity=0;updateReplay(0);}
@@ -262,20 +277,21 @@
    let best=null,bestScore=Infinity;for(const b of buttons){if(b===selected)continue;const r=b.getBoundingClientRect(),x=r.left+r.width/2-ax,y=r.top+r.height/2-ay,forward=x*dx+y*dy,cross=Math.abs(x*dy-y*dx);if(forward<=4)continue;const score=forward+cross*2.3;if(score<bestScore){best=b;bestScore=score;}}
    if(best){focusButton(best);sound('move');}
  }
- function showScreen(next){mode=next;pendingJump=false;keys.clear();$('#overlay').hidden=true;$('#hud').hidden=true;$('#ui').style.display='';document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('active',s.id===next));document.body.className=next==='locker'?'locker':next==='home'?'':'panel';
+ function clearInput(){keys.clear();pendingJump=false;userInput={steer:0,throttle:0,tilt:0,pitch:0};orbitInput={x:0,y:0};padState.nav=0;}
+ function showScreen(next){mode=next;clearInput();$('#overlay').hidden=true;$('#hud').hidden=true;$('#ui').style.display='';document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('active',s.id===next));document.body.className=next==='locker'?'locker':next==='home'?'':'panel';
    replay=null;replayBar.hidden=true;orbitHint.hidden=!['home','locker'].includes(next);
-   if(next==='levels')renderLevels();if(next==='locker')renderLocker();if(next==='shop')renderShop();if(next==='replays')renderReplays();refreshWallet();defaultFocus();boardRoot.visible=true;blob.visible=false;track.visible=false;particleMesh.visible=false;ghostBoard.visible=false;trailMesh.visible=false;
+   if(next==='levels')renderLevels();if(next==='locker')renderLocker();if(next==='shop')renderShop();if(next==='replays')renderReplays();if(next==='settings')renderSettings();refreshWallet();defaultFocus();boardRoot.visible=true;blob.visible=false;track.visible=false;particleMesh.visible=false;ghostBoard.visible=false;trailMesh.visible=false;
  }
  let cameraYaw=0,cameraDistance=15,cameraInit=false,displayPitch=0,displayRoll=0,cameraClock=0;const cameraAnchor=v(),cameraLook=v(),cameraOccluders=new Map();
  function startLevel(id){
    replay=null;replayBar.hidden=true;$('.controls').hidden=false;$('#air-jump').hidden=false;$('#effect-hud').hidden=false;$('#pause-button').hidden=false;
-   levelIndex=id;world=C.buildLevel(id);runner=new C.Runner(world);buildVisuals();mode='race';pendingJump=false;keys.clear();accumulator=0;$('#ui').style.display='none';$('#overlay').hidden=true;$('#hud').hidden=false;focusButton(null);document.activeElement?.blur();track.visible=true;particleMesh.visible=true;boardRoot.scale.setScalar(1);cameraYaw=runner.heading;cameraInit=false;displayPitch=0;cameraDistance=15;
+   levelIndex=id;world=C.buildLevel(id);runner=new C.Runner(world);buildVisuals();mode='race';clearInput();accumulator=0;$('#ui').style.display='none';$('#overlay').hidden=true;$('#hud').hidden=false;focusButton(null);document.activeElement?.blur();track.visible=true;particleMesh.visible=true;boardRoot.scale.setScalar(1);cameraYaw=runner.heading;cameraInit=false;displayPitch=0;cameraDistance=15;
    loadGhost();trailHistory=[];particles.forEach(p=>p.life=0);
    $('#run-name').textContent=world.level.name.toUpperCase();$('#run-pack').textContent=C.packs[world.level.pack].name;$('#best').textContent='PERSONAL BEST '+(save.bests[id]?format(save.bests[id]):'—');eventText('FIND YOUR LINE');
  }
- function restart(){runner.reset();loadGhost();trailHistory=[];mode='race';pendingJump=false;keys.clear();accumulator=0;$('#overlay').hidden=true;$('#hud').hidden=false;cameraInit=false;cameraYaw=runner.heading;displayPitch=0;particles.forEach(p=>p.life=0);eventText('ONE MORE RUN');}
- function pause(){if(mode!=='race')return;mode='pause';keys.clear();pendingJump=false;$('#overlay').hidden=false;$('#modal-tag').textContent='TAKE A BREATHER';$('#modal-title').textContent='Paused.';$('#modal-sub').textContent='Your run is waiting. The clock is stopped.';$('#modal-stats').innerHTML='';$('#result-delta').hidden=true;$('#modal-actions').innerHTML='<button data-action="resume" data-default>RESUME →</button><button data-action="restart">RESTART RUN</button><button data-action="levels">COURSE SELECT</button><button data-action="home">HOME</button><button data-action="ghost">BEST GHOST: '+(save.ghost?'ON':'OFF')+'</button>';defaultFocus();}
- function resume(){mode='race';pendingJump=false;keys.clear();$('#overlay').hidden=true;focusButton(null);accumulator=0;}
+ function restart(){runner.reset();loadGhost();trailHistory=[];mode='race';clearInput();accumulator=0;$('#overlay').hidden=true;$('#hud').hidden=false;cameraInit=false;cameraYaw=runner.heading;displayPitch=0;particles.forEach(p=>p.life=0);eventText('ONE MORE RUN');}
+ function pause(){if(mode!=='race')return;mode='pause';clearInput();$('#overlay').hidden=false;$('#modal-tag').textContent='TAKE A BREATHER';$('#modal-title').textContent='Paused.';$('#modal-sub').textContent='Your run is waiting. The clock is stopped.';$('#modal-stats').innerHTML='';$('#result-delta').hidden=true;$('#modal-actions').innerHTML='<button data-action="resume" data-default>RESUME →</button><button data-action="restart">RESTART RUN</button><button data-action="levels">COURSE SELECT</button><button data-action="home">HOME</button><button data-action="settings">SETTINGS</button><button data-action="ghost">BEST GHOST: '+(save.ghost?'ON':'OFF')+'</button>';defaultFocus();}
+ function resume(){mode='race';clearInput();$('#overlay').hidden=true;focusButton(null);accumulator=0;}
  function finish(){
    mode='finish';const time=runner.elapsed,old=save.bests[levelIndex],newBest=!old||time<old;
    if(newBest){save.bests[levelIndex]=time;recordNext=0;recordRun();try{localStorage.setItem(ghostKey(levelIndex),JSON.stringify({time,frames:recording}));}catch{toast('Best time saved; browser storage is full for the ghost.');}}
@@ -287,9 +303,11 @@
    $('#result-delta').innerHTML=delta===null?'<small>FIRST RECORD SET</small><strong>THIS IS YOUR BENCHMARK</strong><span>Your ghost is ready for the next run.</span>':`<small>${delta<-.0005?'NEW PERSONAL RECORD':delta>.0005?'BEHIND YOUR PERSONAL BEST':'MATCHED YOUR PERSONAL BEST'}</small><strong>${delta<0?'−':'+'}${Math.abs(delta).toFixed(3)}<em> s</em></strong><span>${delta<-.0005?'FASTER':delta>.0005?'SLOWER':'EXACT MATCH'} · ${delta<0?'PREVIOUS BEST':'BEST TIME'} ${format(old)}</span>`;$('#result-delta').hidden=false;
    $('#modal-actions').innerHTML=`<button data-action="restart" data-default>RUN IT BACK →</button><button data-watch="${levelIndex}">WATCH MY BEST →</button>${levelIndex<C.levels.length-1?'<button data-action="next">NEXT COURSE</button>':''}<button data-action="levels">COURSE SELECT</button><button data-action="home">HOME</button>`;defaultFocus();sound('finish');burst('#d9fa50',140,16);
  }
- function goBack(){if(mode==='replay')showScreen('replays');else if(mode==='race')pause();else if(mode==='pause')resume();else if(mode==='finish')showScreen('levels');else if(mode!=='home')showScreen('home');}
+ function goBack(){if(mode==='settings')closeSettings();else if(mode==='replay')showScreen('replays');else if(mode==='race')pause();else if(mode==='pause')resume();else if(mode==='finish')showScreen('levels');else if(mode!=='home')showScreen('home');}
  function action(button){
    if(!button)return;unlockAudio();sound('select');
+   if(button.dataset.setting){changeSetting(button.dataset.setting);return;}
+   if(button.dataset.action==='settings'){openSettings();return;}if(button.dataset.action==='settings-back'){closeSettings();return;}
    if(button.dataset.watch!==undefined){startReplay(+button.dataset.watch);return;}
    if(button.dataset.action==='replay-toggle'){replayPause();return;}if(button.dataset.action==='replay-restart'){if(replay){seekReplay(0);replay.paused=true;replayPause();}return;}if(button.dataset.action==='replay-exit'){showScreen('replays');return;}
    if(button.dataset.level!==undefined){startLevel(+button.dataset.level);return;}
@@ -314,15 +332,20 @@
    keys.add(e.code);if(e.code==='Space'&&!e.repeat)pendingJump=true;if(e.code==='KeyR'&&!e.repeat)restart();if(e.code==='KeyP'&&!e.repeat)pause();
  });
  addEventListener('keyup',e=>keys.delete(e.code));
- function loseFocus(){active=false;keys.clear();pendingJump=false;padState.armed=false;if(mode==='race')pause();if(mode==='replay'&&!replay.paused)replayPause();}
- addEventListener('blur',loseFocus);addEventListener('focus',()=>{active=true;keys.clear();padState.armed=false;});document.addEventListener('visibilitychange',()=>{if(document.hidden)loseFocus();});
+ function loseFocus(){active=false;clearInput();padState.armed=false;if(mode==='race')pause();if(mode==='replay'&&!replay.paused)replayPause();}
+ function regainFocus(){active=true;clearInput();padState.armed=false;}
+ function controllerDisconnected(){clearInput();padState.index=null;padState.previous=[];padState.armed=false;$('#connection').textContent='CONTROLLER DISCONNECTED · KEYBOARD AVAILABLE';if(mode==='race'){pause();$('#modal-sub').textContent='Controller disconnected. Reconnect, release the controls, then press ✕ to resume.';}if(mode==='replay'&&!replay.paused)replayPause();}
+ addEventListener('blur',loseFocus);addEventListener('focus',regainFocus);addEventListener('pagehide',loseFocus);addEventListener('pageshow',regainFocus);document.addEventListener('visibilitychange',()=>{if(document.hidden)loseFocus();else if(!document.hasFocus||document.hasFocus())regainFocus();});
+ addEventListener('gamepaddisconnected',e=>{if(e.gamepad?.index===padState.index)controllerDisconnected();});
  function pollInput(now){
    let pads=[];try{pads=Array.from(navigator.getGamepads?.()||[]);}catch{}
-   const p=pads.find(p=>p&&p.connected),inUI=mode!=='race';let gs=0,gt=0,gr=0,gp=0;orbitInput={x:0,y:0};
+   const connected=pads.filter(p=>p&&p.connected),previousPad=connected.find(p=>p.index===padState.index);
+   if(padState.index!==null&&!previousPad)controllerDisconnected();
+   const p=previousPad||connected.find(p=>p.mapping==='standard')||connected[0],inUI=mode!=='race';let gs=0,gt=0,gr=0,gp=0;orbitInput={x:0,y:0};
    if(p&&active){
-     const buttons=p.buttons.map(b=>b.pressed||b.value>.55),pressed=i=>buttons[i]&&!padState.previous[i],dead=x=>Math.abs(x)<.17?0:Math.sign(x)*(Math.abs(x)-.17)/.83;
-     if(p.index!==padState.index){padState.index=p.index;padState.previous=buttons.slice();$('#connection').textContent='CONTROLLER CONNECTED · '+(p.mapping==='standard'?'READY TO ROLL':'CHECK YOUR BUTTON MAPPING');}
-     const neutral=!buttons.some(Boolean)&&p.axes.every(a=>Math.abs(a)<.2);if(neutral)padState.armed=true;
+     const buttons=p.buttons.map(b=>b.pressed||b.value>.55),pressed=i=>buttons[i]&&!padState.previous[i],dead=x=>Math.abs(x)<=save.settings.deadzone?0:Math.sign(x)*(Math.abs(x)-save.settings.deadzone)/(1-save.settings.deadzone);
+     if(p.index!==padState.index){padState.index=p.index;padState.previous=buttons.slice();padState.armed=false;const name=/dualsense|dualshock|054c|playstation/i.test(p.id||'')?'PLAYSTATION CONTROLLER':'CONTROLLER';$('#connection').textContent=name+' CONNECTED · '+(p.mapping==='standard'?'READY TO ROLL':'CHECK YOUR BUTTON MAPPING');}
+     const neutral=!buttons.some(Boolean)&&p.axes.every(a=>Math.abs(a)<Math.max(.2,save.settings.deadzone+.03));if(neutral)padState.armed=true;
      if(padState.armed){
        if(mode==='replay'){
          if(pressed(0)||pressed(9))replayPause();if(pressed(1))goBack();else if(pressed(11)){seekReplay(0);if(replay.paused)replayPause();}else if(pressed(14))seekReplay(replay.time-5);else if(pressed(15))seekReplay(replay.time+5);
@@ -332,14 +355,14 @@
          if(code&&(code!==padState.nav||now>padState.next)){navigate(dx?Math.sign(dx):0,dx?0:Math.sign(dy));padState.next=now+(code!==padState.nav?330:170);}padState.nav=code;
          if(pressed(0)){unlockAudio();action(selected);}else if(pressed(1))goBack();else if(pressed(9)&&mode==='pause')resume();
        }else{
-         gs=dead(p.axes[0]||0);gp=dead(p.axes[1]||0);gt=(p.buttons[7]?.value||0)-(p.buttons[6]?.value||0);gr=(buttons[5]?1:0)-(buttons[4]?1:0);
+         gs=dead(p.axes[0]||0)*save.settings.steering;gp=dead(p.axes[1]||0)*save.settings.airControl;const trigger=i=>clamp(((p.buttons[i]?.value||0)-.04)/.96,0,1);gt=trigger(7)-trigger(6);gr=((buttons[5]?1:0)-(buttons[4]?1:0))*save.settings.airControl;
          if(pressed(0))pendingJump=true;if(pressed(11))restart();if(pressed(9)||pressed(1))pause();
        }
      }
      padState.previous=buttons;
-   }else{if(padState.index!==null&&!p){$('#connection').textContent='CONTROLLER DISCONNECTED · KEYBOARD AVAILABLE';if(mode==='race')pause();}padState.index=null;padState.previous=[];}
+   }else if(!p){padState.previous=[];}
    const key=(...names)=>names.some(k=>keys.has(k))?1:0;
-   userInput={steer:clamp(gs+key('KeyD','ArrowRight')-key('KeyA','ArrowLeft'),-1,1),throttle:clamp(gt+key('KeyW','ArrowUp')-key('KeyS','ArrowDown'),-1,1),tilt:clamp(gr+key('KeyE')-key('KeyQ'),-1,1),pitch:clamp(gp+key('KeyK')-key('KeyI'),-1,1)};
+   userInput=active&&mode==='race'?{steer:clamp(gs+(key('KeyD','ArrowRight')-key('KeyA','ArrowLeft'))*save.settings.steering,-1,1),throttle:clamp(gt+key('KeyW','ArrowUp')-key('KeyS','ArrowDown'),-1,1),tilt:clamp(gr+(key('KeyE')-key('KeyQ'))*save.settings.airControl,-1,1),pitch:clamp(gp+(key('KeyK')-key('KeyI'))*save.settings.airControl,-1,1)}:{steer:0,throttle:0,tilt:0,pitch:0};
  }
  function updateRace(dt){
    accumulator=Math.min(accumulator+dt,.1);while(accumulator>=1/120&&mode==='race'){
@@ -382,14 +405,17 @@
  }
  function renderMenu(t,dt){
    if(['home','locker'].includes(mode)){orbitYaw+=(orbitInput.x+(keys.has('KeyL')?1:0)-(keys.has('KeyJ')?1:0))*dt*1.8;orbitPitch=clamp(orbitPitch+(orbitInput.y+(keys.has('KeyO')?1:0)-(keys.has('KeyU')?1:0))*dt*1.6,-1.55,1.55);}
-   const aspect=innerWidth/innerHeight;boardRoot.scale.setScalar(1.35);boardRoot.position.set(aspect>.95?2.45:1.1,10.4+Math.sin(t*.8)*.12,-1);
+   const aspect=innerWidth/innerHeight,look=v(0,10.2,-1);camera.position.set(0,14,10.5);camera.lookAt(look);camera.fov=43;camera.updateProjectionMatrix();
+   const height=2*Math.tan(T.MathUtils.degToRad(camera.fov/2))*camera.position.distanceTo(look),width=height*aspect,screenUp=v(0,1,0).applyQuaternion(camera.quaternion);
+   boardRoot.scale.setScalar(Math.min(1.5,width*.39/3.7,height*.72/3.7));boardRoot.position.copy(look).add(v(width*.235,0,0)).addScaledVector(screenUp,height*.055+Math.sin(t*.8)*.045);
    boardRoot.rotation.set(.18+orbitPitch,Math.sin(t*.16)*.2-.65+orbitYaw,.24);boardVisual.rotation.set(0,0,mode==='locker'?Math.PI*.76:Math.PI*.64);
-   camera.position.set(0,14,10.5);camera.lookAt(0,10.2,-1);camera.fov=43;camera.updateProjectionMatrix();sun.position.set(-15,35,15);sun.target.position.set(1,10,-1);sky.position.copy(camera.position);
+   sun.position.set(-15,35,15);sun.target.position.copy(boardRoot.position);menuFill.target.position.copy(boardRoot.position);menuRim.target.position.copy(boardRoot.position);sky.position.copy(camera.position);
    skyUniform.top.value.set('#9abeca');skyUniform.bottom.value.set('#dcefed');waterUniform.color.value.set('#86abb2');
  }
  let last=performance.now();
  function frame(now){
    const dt=Math.min((now-last)/1000,.05);last=now;pollInput(now);music();
+   menuFill.visible=menuRim.visible=['home','locker'].includes(mode);
    if(mode==='race')updateRace(dt);
    if(mode==='replay')updateReplay(dt);
    if(['race','pause','finish','replay'].includes(mode)){renderRunner(['race','replay'].includes(mode)?dt:0);if(mode!=='pause'&&mode!=='replay')updateParticles(dt);}else renderMenu(now/1000,dt);
@@ -404,5 +430,5 @@
  window.addEventListener('error',e=>{const loading=$('#loading');if(loading&&loading.style.display!=='none')loading.querySelector('p').textContent='Could not start: '+e.message;});
  world=C.buildLevel(0);runner=new C.Runner(world);showScreen('home');$('#loading').style.display='none';requestAnimationFrame(frame);
  // Read-only diagnostics for regression tests; never used by gameplay or controller input.
- window.DeckDiagnostics={get mode(){return mode;},get runner(){return runner;},get selected(){return selected;},get roll(){return boardVisual.rotation.z;},get pitch(){return boardVisual.rotation.x;},get orbit(){return {yaw:orbitYaw,pitch:orbitPitch};},get replay(){return replay?{time:replay.time,duration:replay.duration,paused:replay.paused}:null;},get ghostVisible(){return ghostBoard.visible;},get ghostFrames(){return ghostFrames.length;},get trailVisible(){return trailMesh.visible;},get animationOffset(){return boardTexture.offset.y;},get wheelColor(){return wheels[0].material.color.getHexString();},startLevel,navigate,action,goBack,pollInput,get save(){return save;}};
+ window.DeckDiagnostics={get mode(){return mode;},get runner(){return runner;},get selected(){return selected;},get input(){return {...userInput};},get roll(){return boardVisual.rotation.z;},get pitch(){return boardVisual.rotation.x;},get orbit(){return {yaw:orbitYaw,pitch:orbitPitch};},get replay(){return replay?{time:replay.time,duration:replay.duration,paused:replay.paused}:null;},get ghostVisible(){return ghostBoard.visible;},get ghostFrames(){return ghostFrames.length;},get trailVisible(){return trailMesh.visible;},get animationOffset(){return boardTexture.offset.y;},get wheelColor(){return wheels[0].material.color.getHexString();},startLevel,navigate,action,goBack,pollInput,get save(){return save;}};
 })();

@@ -1,0 +1,6 @@
+DECK — FLOW STATE UPDATE
+
+- Adds the FLOW STATE pack: Spillway Run, Crossfade, and Signal Roof (31 courses total).
+- Finishes the responsive menu, readable HUD, Settings screen, controller reconnect handling, and refined board presentation.
+- Preserves First Light, all existing course IDs and saves; the new courses append naturally.
+- Cache versions are bumped so GitHub Pages serves the complete update.
