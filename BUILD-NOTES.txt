@@ -11,7 +11,11 @@ linked bowls and a centre ridge; a terrace descent and landing roof; and a two-t
 crossing around an open court with its finish separated across the water.
 Try the different lines and compare your runs. Route names and paint do not rank
 their speed for you.
-The other 23 original courses are redesigned around broad obstacle structures.
+Air Mail, Cloud Nine, Undertow and Vertigo also have complete new layouts. High
+launch decks, broad receiving bowls, downhill chutes and stacked terraces feed
+real ramps and connected alternatives. Some starts leave a genuine air gap before
+the receiver; other descents stay on the surface and build speed into the next climb.
+The remaining original courses are designed around broad obstacle structures.
 Every rebuilt course has its own authored architectural centerpiece, footprint,
 sculpted riding surface and site plan. Paired craters, canyon shells, braided
 ridges, amphitheatres, dunes, vaults and crescents have different shapes, not just
@@ -29,7 +33,10 @@ broad downhill that pours into a banked catch and a speed-preserving climb-out;
 the high bank is the optional carry line. Crossfade layers a wide lower ribbon
 under a raised S-shaped ribbon, with a real transfer ramp to change your route.
 Signal Roof is a flowing outer roof bypass or a central kicker with a real, short
-gap to the elevated roof. These are structures to ride, not random pads.
+gap to the elevated roof. Each now continues through additional elevated decks,
+descending catches and a substantial final ascent, with an extra connected inside
+route. Intended main-line simulations take roughly a minute or more. Actual times
+depend on your line and control. These are structures to ride, not random pads.
 
 The individual centerpieces are connected to supporting structures:
 - Sculpted bowls with low middle lines and higher carved shoulders.
@@ -57,14 +64,18 @@ but passing beneath it on a lower floor does not. There is no upper height limit
 
 HANDLING AND TOYS
 Acceleration builds more gradually, now about 18% softer than the previous update.
-Braking remains responsive; maximum cruising speed and boost power are unchanged.
+Braking remains responsive; the driving limit and boost power are unchanged.
+Gravity-built momentum can exceed the normal driving limit on descents and in the
+air. The throttle does not keep adding engine speed beyond its driving allowance.
+Fast convex crests let the board take off with its existing momentum, while gentle
+connected slopes still support the wheels. The speedometer includes vertical speed.
 Both jumps add a push away from the board's top side and preserve existing momentum.
 Jump upright to push upward, upside down to push downward, or nose-down to push
 forward. Roll sideways to direct an air jump sideways. A ground jump follows the
 surface under your wheels. You still get only one extra jump before landing.
-A well-aimed jump at top speed can push past the normal 43 m/s driving limit, up
-to about 54 m/s. The extra-speed allowance lasts briefly and releases gradually;
-it does not replace the stronger boost-pad and bumper speed allowances.
+A well-aimed jump at top speed can push past the normal 43 m/s driving limit, to
+about 54 m/s from that speed. Existing downhill or boost momentum is not erased by
+the jump. Natural resistance and landing impacts still cost speed.
 Yellow pads add a strong forward boost and a short trail matching the selected deck.
 Blue jump pads remain in the preserved first course; redesigned courses use natural
 ramps and jumps instead of relying on blue launch strips.
@@ -95,6 +106,7 @@ R1 / RB: roll right in midair; hold to keep rotating
 R3 (right-stick click): restart the run
 Options / Start: pause
 Left stick / D-pad: move the outlined menu selection
+L1 / R1 on the course-selection screen: previous / next course pack
 Cross / A: select
 Circle / B: back
 Right stick on Home or in Locker: turn and tilt the board viewing angle
@@ -122,7 +134,13 @@ R3: restart playback
 Circle / B: leave playback
 Keyboard: Space / P, left / right arrows, R, and Esc.
 Mouse: use the replay slider and visible playback buttons.
-Only your own local best-run ghosts are available; online spectating is not added.
+Only your own local best-run ghosts are available. Worldwide rankings, device
+display names and top-player ghost access are pending Firebase setup, not live.
+
+WHEEL AUDIO
+Rolling wheel texture grows with ground speed and quiets while airborne or paused.
+Landing brings back a brief wheel-touchdown sound. Effects are independent of the
+music volume; SOUND OFF mutes both. Audio starts after a user interaction.
 
 LOCKER AND SHOP
 23 deck designs, including seven animated graphics; eight wheel sets, including

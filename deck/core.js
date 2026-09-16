@@ -266,10 +266,10 @@
       if(this.grounded){
         const lateral=this.velocity.dot(r);this.velocity.addScaledVector(r,-lateral*(1-Math.exp(-dt*14)));
         const forwardSpeed=this.velocity.dot(f);
-        if(throttle<0&&forwardSpeed>1)this.velocity.addScaledVector(f,throttle*33*dt);else this.velocity.addScaledVector(f,throttle*(throttle<0?9:11.5)*dt);
+        if(throttle<0&&forwardSpeed>1)this.velocity.addScaledVector(f,throttle*33*dt);else if(throttle){let impulse=throttle*(throttle<0?9:11.5)*dt;if(throttle>0&&f.y<=.05)impulse=Math.min(impulse,Math.max(0,43/Math.exp(-.14*dt)-Math.hypot(this.velocity.x,this.velocity.z)));else if(throttle<0&&forwardSpeed<=0&&-f.y<=.05)impulse=Math.max(impulse,-Math.max(0,43/Math.exp(-.14*dt)-Math.hypot(this.velocity.x,this.velocity.z)));this.velocity.addScaledVector(f,impulse);}
         this.velocity.multiplyScalar(Math.exp(-.14*dt));
       }else {
-        if(throttle&&this.launchTime<=0)this.velocity.addScaledVector(f,throttle*2.2*dt);
+        if(throttle&&this.launchTime<=0){let impulse=throttle*2.2*dt;if(throttle>0)impulse=Math.min(impulse,Math.max(0,43-Math.hypot(this.velocity.x,this.velocity.z)));else if(this.velocity.dot(f)<=0)impulse=Math.max(impulse,-Math.max(0,43-Math.hypot(this.velocity.x,this.velocity.z)));this.velocity.addScaledVector(f,impulse);}
         // Mild air control lets a player correct a landing without erasing launch momentum.
         this.velocity.addScaledVector(r,-this.velocity.dot(r)*(1-Math.exp(-dt*(this.launchTime>0?.12:.85))));
       }
@@ -292,12 +292,20 @@
         this.jumps=first?1:2;this.grounded=false;this.coyote=0;this.jumpBuffer=0;this.events.push(first?'jump':'double');
       }
       this.velocity.y-=25*dt;
-      const horizontal=Math.hypot(this.velocity.x,this.velocity.z),cap=this.boostTime>0||this.reboundTime>0||this.launchTime>0?76:this.jumpSpeedTime>0?54:43;
-      // Boost speed releases gradually; crossing the timer boundary never slams the brakes.
-      if(horizontal>cap){const next=Math.max(cap,horizontal-16*dt);this.velocity.x*=next/horizontal;this.velocity.z*=next/horizontal;}
+      const horizontal=Math.hypot(this.velocity.x,this.velocity.z),specialCap=this.boostTime>0||this.reboundTime>0||this.launchTime>0?76:Infinity;
+      // The motor has its own 43 m/s ceiling above. Gravity-earned momentum is
+      // never mistaken for engine overspeed. A directional jump's additive impulse
+      // naturally produces its normal ~54 m/s burst without timer-driven braking.
+      if(horizontal>specialCap){const next=Math.max(specialCap,horizontal-16*dt);this.velocity.x*=next/horizontal;this.velocity.z*=next/horizontal;}
       // Adaptive steps keep every movement smaller than a wheel radius, even after a long frame.
       const steps=Math.max(1,Math.ceil(this.velocity.length()*dt/.13)),slice=dt/steps;
       let contact=false,contactN=v(),contactSurface=null,contactVert=false,impactVelocity=this.velocity.clone();
+      // Detachment is a pitch/crest decision. Ignore the lateral component of a
+      // bank normal here: steering across a bank is not the same as flying off
+      // a convex wave, and treating it as such creates spurious side launches.
+      const separationForward=v(Math.sin(this.heading),0,-Math.cos(this.heading));
+      const surfaceRoad=this.surface&&this.surface.startsWith('road:')?this.world.roads[Number(this.surface.slice(5))]:null;
+      const separatingFrom=n=>wasGrounded&&this.velocity.length()>36&&surfaceRoad?.kind!=='wall'&&surfaceRoad?.kind!=='vert'&&(this.velocity.dot(separationForward)*n.dot(separationForward)+this.velocity.y*n.y)>Math.max(.35,this.velocity.length()*.018);
       for(let step=0;step<steps;step++){
         this.p.addScaledVector(this.velocity,slice);
         const triangles=this.world.query(this.p,2.5);
@@ -319,7 +327,10 @@
               }
               const n=dist>.00001?delta.multiplyScalar(1/dist):item.normal.clone();
               const vertContact=item.rideableVert&&n.dot(item.normal)>.65&&(this.velocity.length()>9||n.y>.25);
-              if((n.y>.25||vertContact)&&(item.top!==false)){contact=true;contactN.add(n);contactVert=contactVert||!!vertContact;contactSurface=item.roadId!==undefined?'road:'+item.roadId:item.boxId!==undefined?'box:'+item.boxId:null;}
+              // Edge/corner closest-point normals are collision geometry, not the
+              // deck tangent. Crest release must compare velocity to the authored
+              // top face or connected seams can manufacture upward launches.
+              if((n.y>.25||vertContact)&&(item.top!==false)&&!separatingFrom(item.normal)){contact=true;contactN.add(n);contactVert=contactVert||!!vertContact;contactSurface=item.roadId!==undefined?'road:'+item.roadId:item.boxId!==undefined?'box:'+item.boxId:null;}
               this.p.addScaledVector(n,radius-dist+.00002);center.addScaledVector(n,radius-dist+.00002);
               const into=this.velocity.dot(n);if(into<0)this.velocity.addScaledVector(n,-into*(n.y>.25||vertContact?1:1.08));
               corrected=true;
@@ -350,7 +361,7 @@
       if(!contact&&this.grounded&&!input.jump){
         const ray=new T.Ray(this.p.clone().addScaledVector(this.normal,.05),this.normal.clone().negate());let best=null,bestN=null,bestD=Infinity,bestSurface=null;
         for(const item of this.world.query(this.p,2)){if(item.top===false||item.normal.y<.25&&!(item.rideableVert&&this.velocity.length()>9))continue;const hit=ray.intersectTriangle(item.tri.a,item.tri.b,item.tri.c,false,v());if(!hit)continue;const distance=hit.distanceTo(this.p);if(distance>=.44&&distance<1.12&&distance<bestD){best=hit;bestN=item.normal.clone();bestD=distance;bestSurface=item.roadId!==undefined?'road:'+item.roadId:item.boxId!==undefined?'box:'+item.boxId:null;contactVert=!!item.rideableVert;}}
-        if(best){this.p.copy(best).addScaledVector(bestN,.501);contact=true;contactSurface=bestSurface;contactN.copy(bestN);this.velocity.projectOnPlane(bestN);}
+        if(best&&!separatingFrom(bestN)){this.p.copy(best).addScaledVector(bestN,.501);contact=true;contactSurface=bestSurface;contactN.copy(bestN);this.velocity.projectOnPlane(bestN);}
       }
       if(contact){
         this.normal.copy(contactN.normalize());
@@ -371,7 +382,7 @@
           this.lastLanding={impact,change:this.velocity.length()-before,lossFraction:1-factor,time:this.elapsed};
           this.events.push(impact>12?'rough':'land');
         }
-        this.coyote=.085;this.jumps=0;this.launchTime=0;
+        this.coyote=.085;this.jumps=0;this.launchTime=0;if(!wasGrounded)this.jumpSpeedTime=0;
       }
       else this.coyote=Math.max(0,this.coyote-dt);
       this.grounded=contact;

@@ -1,4 +1,16 @@
-DECK — FIND YOUR LINE / SVEN'S BIRTHDAY
+DECK — DROP IN / GRAVITY
+
+- Replaces Air Mail, Cloud Nine, Undertow and Vertigo with open receiving bowls, downhill approaches, upward ramps and stacked terraces.
+- Extends all three FLOW STATE courses with elevated shelves, descending catches, return decks and substantial final ascents, plus connected alternatives. Intended main-line simulations now take about 59–74 seconds.
+- L1/R1 switch course packs on the level-select screen. Rolling wheel audio builds with ground speed, quiets in flight, and returns with a short wheel-touchdown texture.
+- Alternative routes use neutral names and have physical connections. Discover the useful lines by riding them.
+- Downhill gravity and airborne momentum can carry the board beyond its flat-ground driving speed. Acceleration from driving alone stays gradual and limited.
+- Fast convex crests can release the board into the air naturally; no jump button or hidden launch impulse is needed.
+- The speedometer includes vertical motion, so it shows the speed of a fall as well as forward travel.
+- First Light and the previously replaced Wide Awake, Skyline and Over Under keep their layouts. Only the four newly replaced courses and three extended FLOW STATE courses archive their old layout records; cosmetics, coins and settings are preserved.
+- Worldwide leaderboards and other players' ghosts are not enabled in this release; Firebase setup is pending. Existing device-saved personal bests and your own replays remain available.
+
+PREVIOUS RELEASE — FIND YOUR LINE / SVEN'S BIRTHDAY
 
 - Adds Svens Board for 7,777 earned coins: animated gold-and-black stripes and a stationary Happy B-Day grip graphic.
 - Every completed run earns 50 coins. First-time medal progress adds its normal bonus; replays do not award currency.

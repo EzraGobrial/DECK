@@ -226,8 +226,31 @@
    }
  }
  // Original ambient loop. Audio starts only after a user gesture.
- let audio,master,musicGain,nextBeat=0,beat=0,toastTimer,eventTimer;
- function unlockAudio(){if(!audio){const Audio=window.AudioContext||window.webkitAudioContext;if(!Audio)return;audio=new Audio();master=audio.createGain();master.gain.value=save.muted?0:.24;master.connect(audio.destination);musicGain=audio.createGain();musicGain.gain.value=.45*save.settings.music;musicGain.connect(master);}if(audio.state==='suspended')audio.resume().catch(()=>{});}
+ let audio,master,musicGain,wheelLoop,wheelGain,wheelFilter,wheelTexture,lastWheelTouch=-10,nextBeat=0,beat=0,toastTimer,eventTimer;
+ function unlockAudio(){if(!audio){const Audio=window.AudioContext||window.webkitAudioContext;if(!Audio)return;audio=new Audio();master=audio.createGain();master.gain.value=save.muted?0:.24;master.connect(audio.destination);musicGain=audio.createGain();musicGain.gain.value=.45*save.settings.music;musicGain.connect(master);createWheelAudio();}if(audio.state==='suspended')audio.resume().catch(()=>{});}
+ // Seeded grain plus small periodic ripples produces a wheel texture without
+ // fetching assets. One looping source stays silent unless wheels contact ground.
+ function createWheelAudio(){
+   wheelTexture=audio.createBuffer(1,audio.sampleRate*2,audio.sampleRate);const data=wheelTexture.getChannelData(0);let seed=73129,low=0;
+   for(let i=0;i<data.length;i++){seed=(Math.imul(seed,1664525)+1013904223)>>>0;const n=seed/2147483648-1;low=low*.86+n*.14;const t=i/audio.sampleRate;data[i]=(.32*low+.10*n)*(.78+.22*Math.sin(2*Math.PI*79*t))+.025*Math.sin(2*Math.PI*137*t);}
+   wheelLoop=audio.createBufferSource();wheelLoop.buffer=wheelTexture;wheelLoop.loop=true;
+   const highpass=audio.createBiquadFilter();highpass.type='highpass';highpass.frequency.value=65;highpass.Q.value=.6;
+   wheelFilter=audio.createBiquadFilter();wheelFilter.type='lowpass';wheelFilter.frequency.value=650;wheelFilter.Q.value=.65;
+   wheelGain=audio.createGain();wheelGain.gain.value=0;wheelLoop.connect(highpass);highpass.connect(wheelFilter);wheelFilter.connect(wheelGain);wheelGain.connect(master);wheelLoop.start();
+ }
+ function updateWheelAudio(){
+   if(!audio||!wheelGain)return;const moving=active&&mode==='race'&&runner?.grounded&&!runner.crashTime&&!save.muted,speed=moving?runner.velocity.length():0,t=audio.currentTime;
+   wheelGain.gain.setTargetAtTime(speed>.5?.035+.19*Math.min(1,speed/65)**.7:0,t,.045);
+   wheelLoop.playbackRate.setTargetAtTime(.65+Math.min(speed,100)*.024,t,.09);
+   wheelFilter.frequency.setTargetAtTime(350+Math.min(speed,90)*24,t,.09);
+ }
+ function wheelTouchdown(){
+   if(!active||mode!=='race'||save.muted)return;unlockAudio();if(!audio||audio.currentTime-lastWheelTouch<.12)return;lastWheelTouch=audio.currentTime;
+   const source=audio.createBufferSource(),filter=audio.createBiquadFilter(),gain=audio.createGain(),t=audio.currentTime,impact=runner.lastLanding?.impact||0;
+   source.buffer=wheelTexture;filter.type='lowpass';filter.frequency.value=1400;filter.Q.value=.6;
+   gain.gain.setValueAtTime(.0001,t);gain.gain.exponentialRampToValueAtTime(.20+Math.min(impact,30)*.006,t+.006);gain.gain.exponentialRampToValueAtTime(.0001,t+.105);
+   source.connect(filter);filter.connect(gain);gain.connect(master);source.onended=()=>{source.disconnect();filter.disconnect();gain.disconnect();};source.start(t);source.stop(t+.12);
+ }
  function tone(freq,time,length,volume,wave='sine',destination=musicGain){if(!audio)return;const o=audio.createOscillator(),g=audio.createGain();o.type=wave;o.frequency.value=freq;g.gain.setValueAtTime(.0001,time);g.gain.exponentialRampToValueAtTime(volume,time+.012);g.gain.exponentialRampToValueAtTime(.0001,time+length);o.connect(g);g.connect(destination);o.start(time);o.stop(time+length+.03);}
  function music(){if(!audio||audio.state!=='running')return;const menuMode=!['race','pause','finish','replay'].includes(mode);musicGain.gain.setTargetAtTime((menuMode?.45:.11)*save.settings.music,audio.currentTime,.2);if(nextBeat<audio.currentTime)nextBeat=audio.currentTime+.03;
    while(nextBeat<audio.currentTime+.10){const step=beat%16,chord=[[55,60,64,67],[53,57,60,64],[57,60,64,69],[55,59,62,67]][Math.floor(beat/32)%4],hz=n=>440*2**((n-69)/12);
@@ -252,10 +275,12 @@
  }
    const previews=C.levels.map(l=>C.coursePath(l));
  function renderLevels(){
+   if(!$('#pack-shoulder-hint')){const hint=document.createElement('div');hint.id='pack-shoulder-hint';hint.innerHTML='<span><kbd>L1</kbd> PREVIOUS PACK</span><span>NEXT PACK <kbd>R1</kbd></span>';$('#pack-tabs').before(hint);}
    $('#pack-tabs').innerHTML=C.packs.map((p,i)=>`<button data-pack="${i}" class="${pack===i?'active':''}">${String(i+1).padStart(2,'0')} / ${p.name}</button>`).join('');
    $('#course-grid').innerHTML=C.levels.filter(l=>l.pack===pack).map((l,i)=>`<button class="course-card" data-level="${l.id}" ${i===0?'data-default':''}><div class="course-art"><canvas width="420" height="170" data-map="${l.id}"></canvas><span class="number">${String(l.id+1).padStart(2,'0')} / ${C.levels.length}</span><span class="medal">${save.rewards[l.id]?["","FINISHED","BRONZE","SILVER","GOLD"][save.rewards[l.id]]:''}</span></div><div class="course-info"><h3>${l.name}</h3><p>${l.description}</p><div class="course-meta"><span>${l.difficulty} · ${Math.round(previews[l.id].length)} M</span><span>${save.bests[l.id]?format(save.bests[l.id]):'SET A TIME'} ↗</span></div></div></button>`).join('');
    document.querySelectorAll('[data-map]').forEach(canvas=>drawMap(canvas,previews[+canvas.dataset.map]));
  }
+ function switchPack(direction){pack=(pack+direction+C.packs.length)%C.packs.length;renderLevels();defaultFocus();sound('move');}
  function renderLocker(){
    $('#locker-grid').innerHTML=skins.filter(s=>save.owned.includes(s.id)).map(s=>`<button class="skin-card ${s.id===save.skin?'equipped':''}" data-skin="${s.id}" ${s.id===save.skin?'data-default':''}><div class="deck-swatch ${s.animated?'animated-deck':''}" style="background:linear-gradient(125deg,${s.color} 45%,${s.second} 46% 69%,${s.color} 70%)"></div><strong>${s.name}</strong><small>${s.id===save.skin?'● EQUIPPED':s.animated?'ANIMATED · EQUIP ↗':'EQUIP DECK ↗'}</small></button>`).join('')+'<h3 class="catalog-heading">YOUR WHEELS</h3>'+wheelStyles.filter(w=>save.ownedWheels.includes(w.id)).map(w=>`<button class="skin-card ${save.wheel===w.id?'equipped':''}" data-wheel="${w.id}"><div class="wheel-swatch" style="--wheel:${w.color}"></div><strong>${w.name}</strong><small>${save.wheel===w.id?'● EQUIPPED':'EQUIP WHEELS ↗'}</small></button>`).join('');
  }
@@ -357,7 +382,7 @@
    keys.add(e.code);if(e.code==='Space'&&!e.repeat)pendingJump=true;if(e.code==='KeyR'&&!e.repeat)restart();if(e.code==='KeyP'&&!e.repeat)pause();
  });
  addEventListener('keyup',e=>keys.delete(e.code));
- function loseFocus(){active=false;clearInput();padState.armed=false;if(mode==='race')pause();if(mode==='replay'&&!replay.paused)replayPause();}
+ function loseFocus(){active=false;updateWheelAudio();clearInput();padState.armed=false;if(mode==='race')pause();if(mode==='replay'&&!replay.paused)replayPause();}
  function regainFocus(){active=true;clearInput();padState.armed=false;}
  function controllerDisconnected(){
    clearInput();padState.index=null;padState.previous=[];padState.armed=false;
@@ -380,6 +405,7 @@
        if(mode==='replay'){
          if(pressed(0)||pressed(9))replayPause();if(pressed(1))goBack();else if(pressed(11)){seekReplay(0);if(replay.paused)replayPause();}else if(pressed(14))seekReplay(replay.time-5);else if(pressed(15))seekReplay(replay.time+5);
        }else if(inUI){
+         if(mode==='levels'&&(pressed(4)||pressed(5))){if(buttons[4]!==buttons[5])switchPack(pressed(5)?1:-1);padState.previous=buttons;padState.nav=0;return;}
          if(['home','locker'].includes(mode))orbitInput={x:dead(p.axes[2]||0),y:dead(p.axes[3]||0)};
          const dx=(buttons[15]?1:0)-(buttons[14]?1:0)||(Math.abs(p.axes[0]||0)>.55?Math.sign(p.axes[0]):0),dy=(buttons[13]?1:0)-(buttons[12]?1:0)||(Math.abs(p.axes[1]||0)>.55?Math.sign(p.axes[1]):0),code=dx+dy*3;
          if(code&&(code!==padState.nav||now>padState.next)){navigate(dx?Math.sign(dx):0,dx?0:Math.sign(dy));padState.next=now+(code!==padState.nav?330:170);}padState.nav=code;
@@ -403,7 +429,7 @@
        if(e==='boost'){burst(skins.find(s=>s.id===save.skin).color,40,10);eventText('BOOST · FULL POWER');}if(e==='double'){burst('#bca1ff',30,8);eventText('AIR JUMP');}if(e==='pad'){burst('#38cfff',42,10);eventText('UP TO THE NEXT DECK');}if(e==='bonk'){burst('#ff443c',52,15);eventText('REBOUND!');}
        if(e==='rough')burst('#d7dfe2',Math.min(24,Math.round(runner.lastLanding.impact/2)),3);
        if(e==='crash'){eventText('CRASH');burst('#d7dfe2',25,3);sound('bonk');}
-       if(e!=='land'||Math.hypot(runner.velocity.x,runner.velocity.z)>8)sound(e);
+       if(e==='land'||e==='rough')wheelTouchdown();else sound(e);
      }
    }
  }
@@ -427,7 +453,7 @@
    for(const [object,until] of cameraOccluders){const faded=cameraClock<until,m=object.material;m.transparent=true;m.depthWrite=!faded;m.opacity=faded?.13:m.opacity+(1-m.opacity)*(1-Math.exp(-dt*6));if(!faded&&m.opacity>.995){m.opacity=1;m.transparent=false;cameraOccluders.delete(object);}}
    camera.lookAt(cameraLook);camera.fov=62;camera.updateProjectionMatrix();
    sun.position.copy(runner.p).add(v(-35,65,25));sun.target.position.copy(runner.p);sky.position.copy(camera.position);
-   $('#clock').textContent=format(runner.elapsed);$('#speed').textContent=Math.round(Math.hypot(runner.velocity.x,runner.velocity.z)*3.6);$('#progress-fill').style.width=clamp(runner.progress/(world.path.finishU||.975)*100,0,100)+'%';
+   $('#clock').textContent=format(runner.elapsed);$('#speed').textContent=Math.round(runner.velocity.length()*3.6);$('#progress-fill').style.width=clamp(runner.progress/(world.path.finishU||.975)*100,0,100)+'%';
    const ready=runner.grounded?2:Math.max(0,2-runner.jumps);$('#air-jump').innerHTML=(ready===2?'● ●':ready===1?'● ○':'○ ○')+' <span>'+(ready?'AIR JUMP READY':'LAND TO RECHARGE')+'</span>';
    drawMap($('#minimap'),world.path,true,runner.p,world.shortcut);
    $('#ghost-status').textContent=ghostFrames.length?(save.ghost?'RACING YOUR BEST GHOST':'GHOST OFF'):'SET A RECORD TO UNLOCK YOUR GHOST';
@@ -449,6 +475,7 @@
    menuFill.visible=menuRim.visible=['home','locker'].includes(mode);
    if(mode==='race')updateRace(dt);
    if(mode==='replay')updateReplay(dt);
+   updateWheelAudio();
    if(['race','pause','finish','replay'].includes(mode)){renderRunner(['race','replay'].includes(mode)?dt:0);if(mode!=='pause'&&mode!=='replay')updateParticles(dt);}else renderMenu(now/1000,dt);
    if(mode!=='pause')waterUniform.time.value+=dt;for(const pm of padMeshes){pm.rim.material.color.setScalar(.85+Math.sin(now*.003)*.15);}
    for(const bm of bumperMeshes){const age=runner.elapsed-bm.b.hit,pulse=bm.b.hit>0&&age>=0&&age<.5?Math.sin(age/.5*Math.PI):0;bm.body.scale.setScalar(1+pulse*.16);bm.ring.scale.setScalar(1+pulse*2);bm.ring.material.opacity=.3+pulse*.5;}

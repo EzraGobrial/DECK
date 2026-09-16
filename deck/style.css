@@ -59,3 +59,9 @@ body.locker #ui{background:linear-gradient(90deg,#f0f6f3fa,#ecf5f3e8 37%,#e5f2f0
 @media(max-width:520px){:root{--menu-gutter:18px}#home .home-copy{width:65%}#home .home-description{font-size:10px}#home .eyebrow{font-size:7px;letter-spacing:.8px}#home h1{font-size:clamp(48px,12vw,62px)}#home .home-nav button{font-size:15px;padding:8px 12px}#home .home-nav button>span:first-child{margin-right:10px;font-size:8px}.hero-caption,.home-stamp{display:none}#orbit-hint{font-size:7px;max-width:28%;right:12px;line-height:1.6}.settings-grid{grid-template-columns:1fr}.course-grid,.shop-grid,.replay-list{grid-template-columns:1fr}.top-actions{gap:12px}.top-actions button{font-size:10px}.skin-grid{width:65%;grid-template-columns:1fr}.locker-caption{display:none}}
 @media(max-height:480px){#home .home-intro .eyebrow,#home .home-description{display:none}#home h1{font-size:39px;margin:0}#home .home-copy{grid-template-columns:1fr 1.7fr;grid-template-rows:1fr;gap:24px;width:66%;align-items:center}#home .home-nav{height:100%;gap:5px}#home .home-nav button{font-size:14px}.hero-caption{left:73%;bottom:18%}.hero-caption h3{font-size:17px}.hero-caption .pill,.hero-caption .small-label{display:none}.home-stamp{display:none}}
 @media(prefers-reduced-motion:reduce){#home .home-nav button,#home .nav-arrow,.course-card{transition:none!important}}
+
+/* Shoulder navigation lives with the course pack tabs, including narrow screens. */
+#pack-shoulder-hint{display:flex;justify-content:space-between;gap:16px;margin:4px 0 10px;color:#304d59;font-size:11px;font-weight:800;letter-spacing:1px}
+#pack-shoulder-hint span{display:flex;align-items:center;gap:8px}
+#pack-shoulder-hint kbd{padding:4px 8px;border:1px solid #526a73;border-radius:5px;background:#f5f9f9;font:inherit;letter-spacing:0}
+@media(max-width:520px){#pack-shoulder-hint{font-size:9px;letter-spacing:.4px;gap:8px}}
